@@ -3,50 +3,26 @@
 import requests
 from collections import Counter
 from datetime import datetime, timedelta, timezone
+from zkbchecker.local_config import EXCLUDED_SHIP_IDS
 
-# Ships to exclude when counting loss statistics (capsules, mobile structures).
-# Will move to a database-backed configuration model later.
-EXCLUDED_SHIP_IDS = {
-    670,    # Capsule
-    33328,  # Capsule (Genolution)
-    33474,  # Mobile Depot
-    33700,  # 'Packrat' Mobile Tractor Unit
-    33475,  # Mobile Tractor Unit
-    33702,  # 'Magpie' Mobile Tractor Unit
-    33520,  # 'Wetu' Mobile Depot
-    33522,  # 'Yurt' Mobile Depot
-    26892,  # Mobile Small Warp Disruptor II
-    26890,  # Mobile Medium Warp Disruptor II
-    26888,  # Mobile Large Warp Disruptor II
-    12198,  # Mobile Small Warp Disruptor I
-    12199,  # Mobile Medium Warp Disruptor I
-    12200,  # Mobile Large Warp Disruptor I
-    28774,  # Syndicate Mobile Small Warp Disruptor
-    28772,  # Syndicate Mobile Medium Warp Disruptor
-    28770,  # Syndicate Mobile Large Warp Disruptor
-}
+try:
+    from zkbchecker.local_config_private import (
+        SUSPICIOUS_ALLIANCES,
+        SUSPICIOUS_CORPORATIONS,
+    )
+except ImportError:
+    from zkbchecker.local_config import (
+        SUSPICIOUS_ALLIANCES,
+        SUSPICIOUS_CORPORATIONS,
+    )
 
 LOSSES_LOOKBACK_MONTHS = 4
-
-# Alliances/corporations we consider suspicious when they appear
-# as the final-blow attacker on the checked character's kills.
-# Will move to a database-backed configuration model later.
-SUSPICIOUS_ALLIANCES = {
-    99012042: "FNT!",
-    99011387: "ZERGS!",
-    1354830081: "GOONS!",
-    495729389: "Shadow Cartel!",
-    99005065: "Hard Knocks!",
-    99007237: "Lazerhawks!",
-}
-SUSPICIOUS_CORPORATIONS = {}
 
 SUSPICIOUS_FLEET_LOOKBACK_KILLS = 100
 SUSPICIOUS_FLEET_LOOKBACK_MONTHS = 8
 
 ZKB_BASE_URL = "https://zkillboard.com/api"
 USER_AGENT = "ZkbChecker-AA-Plugin/1.0 (contact: baphomet448 via Discord)"
-
 
 def get_stats(character_id: int) -> dict:
     """Fetch character stats from zKillboard.

@@ -14,3 +14,6 @@ __pycache__
 .coverage
 /coverage.xml
 alliance_auth.sqlite3
+
+# Local sensitive configuration (suspicious alliances/corps) - never commit
+zkbchecker/local_config_private.py
