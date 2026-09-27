@@ -1,5 +1,5 @@
-appname = example
-package = example
+appname = zkbchecker
+package = zkbchecker
 
 # Default goal
 .DEFAULT_GOAL := help
