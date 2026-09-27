@@ -4,12 +4,12 @@
 from django.apps import AppConfig
 
 # AA Example App
-from example import __version__
+from zkbchecker import __version__
 
 
 class ExampleConfig(AppConfig):
     """App Config"""
 
-    name = "example"
-    label = "example"
+    name = "zkbchecker"
+    label = "zkbchecker"
     verbose_name = f"Example App v{__version__}"

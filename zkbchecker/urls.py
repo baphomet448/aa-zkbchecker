@@ -4,9 +4,9 @@
 from django.urls import path
 
 # AA Example App
-from example import views
+from zkbchecker  import views
 
-app_name: str = "example"  # pylint: disable=invalid-name
+app_name: str = "zkbchecker"  # pylint: disable=invalid-name
 
 urlpatterns = [
     path("", views.index, name="index"),

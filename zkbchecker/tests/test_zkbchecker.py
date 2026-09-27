@@ -21,7 +21,7 @@ class TestExample(TestCase):
 
         super().setUpClass()
 
-    def test_example(self):
+    def test_zkbchecker(self):
         """
         Dummy test function
         :return:

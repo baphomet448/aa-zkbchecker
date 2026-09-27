@@ -5,12 +5,12 @@ requires = [
 ]
 
 [project]
-name = "aa-example-plugin"
+name = "aa-zkbchecker"
 description = "Example Plugin for Alliance Auth (GitHub Version)"
 readme = "README.md"
 keywords = [
     "allianceauth",
-    "example",
+    "zkbchecker",
 ]
 license = { file = "LICENSE" }
 authors = [
@@ -40,11 +40,11 @@ dynamic = [
 dependencies = [
     "allianceauth>=5",
 ]
-urls.Changelog = "https://github.com/ppfeufer/aa-example-plugin/blob/master/CHANGELOG.md"
-urls.Tracker = "https://github.com/ppfeufer/aa-example-plugin/issues"
+urls.Changelog = "https://github.com/baphomet448/aa-zkbchecker/blob/master/CHANGELOG.md"
+urls.Tracker = "https://github.com/baphomet448/aa-zkbchecker/issues"
 
 [tool.hatch]
-version.path = "example/__init__.py"
+version.path = "zkbchecker/__init__.py"
 build.include = [
-    "/example",
+    "/zkbchecker",
 ]
