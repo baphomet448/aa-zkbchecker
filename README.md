@@ -27,6 +27,18 @@ ______________________________________________________________________
 
 - Alliance Auth v5+
 
+## Permissions
+
+- `zkbchecker.basic_access` — allows using the character checker
+  (the main page).
+- `zkbchecker.manage_config` — allows managing Suspicious Entities
+  and Excluded Ships in the admin (see Configuration above).
+
+Assign these to the appropriate Alliance Auth groups (e.g. give
+`basic_access` broadly to security officers, and `manage_config`
+only to a smaller, trusted group) via **Groups → your group →
+Permissions** in the Alliance Auth admin.
+
 ## Configuration
 
 The plugin's detection logic relies on two admin-managed lists, found
