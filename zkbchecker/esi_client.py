@@ -38,3 +38,29 @@ def resolve_ids(ids: list[int]) -> list[dict]:
     )
     response.raise_for_status()
     return response.json()
+
+def search_ship_types(query: str, limit: int = 10) -> list[dict]:
+    """Search for ship/item type names matching the query (partial,
+    case-insensitive match) and return a list of {"id": ..., "name": ...}.
+    """
+    if not query or len(query) < 2:
+        return []
+
+    response = requests.get(
+        f"{ESI_BASE_URL}/search/",
+        params={
+            "categories": "inventory_type",
+            "search": query,
+            "strict": "false",
+        },
+        headers={"User-Agent": USER_AGENT},
+        timeout=15,
+    )
+    response.raise_for_status()
+    data = response.json()
+
+    type_ids = data.get("inventory_type", [])[:limit]
+    if not type_ids:
+        return []
+
+    return resolve_ids(type_ids)

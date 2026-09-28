@@ -3,18 +3,6 @@
 import requests
 from collections import Counter
 from datetime import datetime, timedelta, timezone
-from zkbchecker.local_config import EXCLUDED_SHIP_IDS
-
-try:
-    from zkbchecker.local_config_private import (
-        SUSPICIOUS_ALLIANCES,
-        SUSPICIOUS_CORPORATIONS,
-    )
-except ImportError:
-    from zkbchecker.local_config import (
-        SUSPICIOUS_ALLIANCES,
-        SUSPICIOUS_CORPORATIONS,
-    )
 
 LOSSES_LOOKBACK_MONTHS = 4
 
@@ -23,6 +11,22 @@ SUSPICIOUS_FLEET_LOOKBACK_MONTHS = 8
 
 ZKB_BASE_URL = "https://zkillboard.com/api"
 USER_AGENT = "ZkbChecker-AA-Plugin/1.0 (contact: baphomet448 via Discord)"
+
+def _get_excluded_ship_ids() -> set[int]:
+    from zkbchecker.models import ExcludedShip
+    return set(ExcludedShip.objects.values_list("ship_type_id", flat=True))
+
+
+def _get_suspicious_entities() -> tuple[dict[int, str], dict[int, str]]:
+    from zkbchecker.models import SuspiciousEntity
+    alliances = {}
+    corporations = {}
+    for entity in SuspiciousEntity.objects.all():
+        if entity.entity_type == SuspiciousEntity.EntityType.ALLIANCE:
+            alliances[entity.entity_id] = entity.label
+        else:
+            corporations[entity.entity_id] = entity.label
+    return alliances, corporations
 
 def get_stats(character_id: int) -> dict:
     """Fetch character stats from zKillboard.
@@ -76,6 +80,7 @@ def get_losses(character_id: int) -> dict:
     both excluding junk ship types and limited to the last
     LOSSES_LOOKBACK_MONTHS months).
     """
+    excluded_ship_ids = _get_excluded_ship_ids()
     response = requests.get(
         f"{ZKB_BASE_URL}/losses/characterID/{character_id}/",
         headers={"User-Agent": USER_AGENT},
@@ -101,7 +106,7 @@ def get_losses(character_id: int) -> dict:
             continue
 
         ship_type_id = entry.get("victim", {}).get("ship_type_id")
-        if ship_type_id in EXCLUDED_SHIP_IDS:
+        if ship_type_id in excluded_ship_ids:
             continue
 
         counts[ship_type_id] += 1
@@ -163,6 +168,7 @@ def get_kills(character_id: int) -> dict:
     ]
 
     # Suspicious fleet check: last N kills, within M months
+    suspicious_alliances, suspicious_corporations = _get_suspicious_entities()
     fleet_cutoff = datetime.now(timezone.utc) - timedelta(days=30 * SUSPICIOUS_FLEET_LOOKBACK_MONTHS)
     for entry in entries[:SUSPICIOUS_FLEET_LOOKBACK_KILLS]:
         killmail_time_str = entry.get("killmail_time", "")
@@ -178,11 +184,11 @@ def get_kills(character_id: int) -> dict:
                 continue
             alliance_id = attacker.get("alliance_id")
             corp_id = attacker.get("corporation_id")
-            if alliance_id in SUSPICIOUS_ALLIANCES:
-                result["suspicious_alliance"] = SUSPICIOUS_ALLIANCES[alliance_id]
+            if alliance_id in suspicious_alliances:
+                result["suspicious_alliance"] = suspicious_alliances[alliance_id]
                 return result
-            if corp_id in SUSPICIOUS_CORPORATIONS:
-                result["suspicious_alliance"] = SUSPICIOUS_CORPORATIONS[corp_id]
+            if corp_id in suspicious_corporations:
+                result["suspicious_alliance"] = suspicious_corporations[corp_id]
                 return result
 
     return result

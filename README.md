@@ -27,6 +27,39 @@ ______________________________________________________________________
 
 - Alliance Auth v5+
 
+## Configuration
+
+The plugin's detection logic relies on two admin-managed lists, found
+under **Admin → ZKBCHECKER**:
+
+### Suspicious Entities
+
+Alliances or corporations considered hostile/suspicious. When a
+checked character's final blow on a recent kill was made by someone
+from one of these entities, the result is flagged with a "Suspicious
+alliance link".
+
+To add one, paste a zKillboard alliance or corporation URL (e.g.
+`https://zkillboard.com/alliance/99012042/`) — the entity type and ID
+are parsed from it automatically — and give it a short label to
+display in results.
+
+Requires the `zkbchecker.manage_config` permission.
+
+### Excluded Ships
+
+Ship types ignored when calculating loss statistics (capsules,
+mobile depots, mobile warp disruptors, etc.). Without this, a
+character's "top ships lost" list would be dominated by these
+disposable items instead of showing what they actually fly in
+combat.
+
+Start typing a ship name in the admin form; matching suggestions are
+pulled from a local, ESI-sourced list (see `update_ship_list` below)
+and selecting one fills in the ship type ID automatically.
+
+Requires the `zkbchecker.manage_config` permission.
+
 ## Installation
 
 Install the package into your Alliance Auth virtual environment:
@@ -60,6 +93,16 @@ Run migrations and restart your Alliance Auth server:
 python manage.py migrate
 python manage.py collectstatic --noinput
 ```
+
+The excluded-ship autocomplete field needs a local, one-time snapshot
+of current EVE ship types. Fetch it with:
+
+```bash
+python manage.py update_ship_list
+```
+
+Re-run this command occasionally (e.g. after a game expansion adds
+new ships) to keep the autocomplete list up to date.
 
 Then restart your `allianceserver`/`gunicorn`/`supervisor` processes as usual.
 

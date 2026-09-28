@@ -11,10 +11,10 @@ from django.utils import timezone
 
 from celery.result import AsyncResult
 
+from pathlib import Path
+
 from zkbchecker.tasks import check_characters_task
-
 from zkbchecker.excel_export import build_workbook
-
 
 @login_required
 @permission_required("zkbchecker.basic_access")
@@ -91,3 +91,17 @@ def export_excel(request: WSGIRequest) -> HttpResponse:
     filename = f"zkb_check_{timezone.now().strftime('%Y-%m-%d_%H-%M')}.xlsx"
     response["Content-Disposition"] = f'attachment; filename="{filename}"'
     return response
+
+@login_required
+@permission_required("zkbchecker.manage_config")
+def ship_list(request: WSGIRequest) -> JsonResponse:
+    """Serve the locally cached list of ship types for the
+    ExcludedShip admin autocomplete field."""
+    path = Path(__file__).resolve().parent / "ship_list.json"
+    if not path.exists():
+        return JsonResponse({"ships": []})
+
+    with open(path, "r", encoding="utf-8") as f:
+        ships = json.load(f)
+
+    return JsonResponse({"ships": ships})
