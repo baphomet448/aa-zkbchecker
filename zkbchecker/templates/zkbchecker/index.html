@@ -40,14 +40,14 @@
                 {% if not result.found %}
                     <p>{% translate "Character not found on zKillboard." %}</p>
                 {% else %}
-                    <table class="table">
+                     <table class="table">
                         <tr>
-                            <th>{% translate "Corporation ID" %}</th>
-                            <td>{{ result.corporation_id }}</td>
+                            <th>{% translate "Corporation" %}</th>
+                            <td>{{ result.corporation_name }}</td>
                         </tr>
                         <tr>
-                            <th>{% translate "Alliance ID" %}</th>
-                            <td>{{ result.alliance_id }}</td>
+                            <th>{% translate "Alliance" %}</th>
+                            <td>{{ result.alliance_name }}</td>
                         </tr>
                         <tr>
                             <th>{% translate "Birthday" %}</th>
@@ -58,6 +58,14 @@
                             <td>{{ result.kills_total }} / {{ result.losses_total }}</td>
                         </tr>
                         <tr>
+                            <th>{% translate "Solo Kills / Losses" %}</th>
+                            <td>{{ result.solo_kills }} / {{ result.solo_losses }}</td>
+                        </tr>
+                        <tr>
+                            <th>{% translate "Danger / Gang Ratio" %}</th>
+                            <td>{{ result.danger_ratio }} / {{ result.gang_ratio }}</td>
+                        </tr>
+                        <tr>
                             <th>{% translate "Last kill" %}</th>
                             <td>{{ result.last_kill_date }}</td>
                         </tr>
@@ -65,6 +73,26 @@
                             <th>{% translate "Last loss" %}</th>
                             <td>{{ result.last_loss_date }}</td>
                         </tr>
+                        {% if result.top_ships_kills %}
+                            <tr>
+                                <th>{% translate "Top Ships (Kills)" %}</th>
+                                <td>
+                                    {% for ship in result.top_ships_kills %}
+                                        {{ ship.name }} ({{ ship.count }}){% if not forloop.last %}, {% endif %}
+                                    {% endfor %}
+                                </td>
+                            </tr>
+                        {% endif %}
+                        {% if result.top_ships_losses %}
+                            <tr>
+                                <th>{% translate "Top Ships (Losses)" %}</th>
+                                <td>
+                                    {% for ship in result.top_ships_losses %}
+                                        {{ ship.name }} ({{ ship.count }}){% if not forloop.last %}, {% endif %}
+                                    {% endfor %}
+                                </td>
+                            </tr>
+                        {% endif %}
                         {% if result.triggers %}
                             <tr>
                                 <th>{% translate "Triggers" %}</th>

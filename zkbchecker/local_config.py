@@ -33,4 +33,5 @@ EXCLUDED_SHIP_IDS: set[int] = {
     28774,  # Syndicate Mobile Small Warp Disruptor
     28772,  # Syndicate Mobile Medium Warp Disruptor
     28770,  # Syndicate Mobile Large Warp Disruptor
+    58904,  # Mobile Observatory
 }
