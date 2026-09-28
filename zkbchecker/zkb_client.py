@@ -42,16 +42,16 @@ def get_stats(character_id: int) -> dict:
     response.raise_for_status()
     raw = response.json()
 
-    info = raw.get("info", {})
+    info = raw.get("info") or {}
 
     # Extract the "ship" category from topAllTime (all ships used, by kills)
     all_ships_used = []
-    for entry in raw.get("topAllTime", []):
+    for entry in raw.get("topAllTime") or []:
         if entry.get("type") == "ship":
             all_ships_used = entry.get("data", [])
             break
 
-    ganked = raw.get("labels", {}).get("ganked") or {}
+    ganked = (raw.get("labels") or {}).get("ganked") or {}
 
     return {
         "name": info.get("name", ""),
