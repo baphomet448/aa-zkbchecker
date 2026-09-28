@@ -4,119 +4,276 @@
 {% load humanize %}
 
 {% block details %}
-    <div class="card card-primary">
-        <div class="card-header">
-            <div class="card-title">{% translate "ZKB Character Check" %}</div>
+    <div id="zkb-content-wrapper" class="position-relative">
+
+        <div id="zkb-overlay" class="d-none">
+            <div class="spinner-border text-light" role="status">
+                <span class="visually-hidden">{% translate "Loading..." %}</span>
+            </div>
+            <div id="zkb-progress-text" class="mt-2 text-light"></div>
         </div>
 
-        <div class="card-body">
-            <form method="post">
-                {% csrf_token %}
-                <div class="mb-3">
-                    <label for="names" class="form-label">
-                        {% translate "Character name" %}
-                    </label>
-                    <textarea
-                        name="names"
-                        id="names"
-                        class="form-control"
-                        rows="3"
-                        placeholder="{% translate 'Enter one character name' %}"
-                    ></textarea>
-                </div>
-                <button type="submit" class="btn btn-primary">
-                    {% translate "Check" %}
-                </button>
-            </form>
-        </div>
-    </div>
-
-    {% if result %}
-        <div class="card card-primary mt-3">
+        <div class="card card-primary">
             <div class="card-header">
-                <div class="card-title">{{ result.name }}</div>
+                <div class="card-title">{% translate "ZKB Character Check" %}</div>
+            </div>
+
+            <div class="card-body">
+                <form id="zkb-check-form">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="names" class="form-label">
+                            {% translate "Character names" %}
+                        </label>
+                        <textarea
+                            name="names"
+                            id="names"
+                            class="form-control"
+                            rows="5"
+                            placeholder="{% translate 'One character name per line' %}"
+                        ></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        {% translate "Check" %}
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div id="zkb-results-card" class="card card-primary mt-3 d-none">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div class="card-title">{% translate "Results" %}</div>
+                <button id="zkb-export-excel" type="button" class="btn btn-sm zkb-export-btn d-none">
+                    {% translate "Export Excel" %}
+                </button>
             </div>
             <div class="card-body">
-                {% if not result.found %}
-                    <p>{% translate "Character not found on zKillboard." %}</p>
-                {% else %}
-                     <table class="table">
+                <table id="zkb-results-table" class="table table-striped w-100">
+                    <thead>
                         <tr>
+                            <th>{% translate "Name" %}</th>
                             <th>{% translate "Corporation" %}</th>
-                            <td>{{ result.corporation_name }}</td>
-                        </tr>
-                        <tr>
                             <th>{% translate "Alliance" %}</th>
-                            <td>{{ result.alliance_name }}</td>
-                        </tr>
-                        <tr>
                             <th>{% translate "Birthday" %}</th>
-                            <td>{{ result.birthday }}</td>
+                            <th>{% translate "Kills" %}</th>
+                            <th>{% translate "Losses" %}</th>
+                            <th>{% translate "Solo K/L" %}</th>
+                            <th>{% translate "Danger/Gang" %}</th>
+                            <th>{% translate "Last Kill" %}</th>
+                            <th>{% translate "Last Loss" %}</th>
+                            <th>{% translate "Top Ships (Kills)" %}</th>
+                            <th>{% translate "Top Ships (Losses)" %}</th>
+                            <th>{% translate "Triggers" %}</th>
+                            <th>{% translate "Suspicious Alliance" %}</th>
                         </tr>
-                        <tr>
-                            <th>{% translate "Kills / Losses" %}</th>
-                            <td>{{ result.kills_total }} / {{ result.losses_total }}</td>
-                        </tr>
-                        <tr>
-                            <th>{% translate "Solo Kills / Losses" %}</th>
-                            <td>{{ result.solo_kills }} / {{ result.solo_losses }}</td>
-                        </tr>
-                        <tr>
-                            <th>{% translate "Danger / Gang Ratio" %}</th>
-                            <td>{{ result.danger_ratio }} / {{ result.gang_ratio }}</td>
-                        </tr>
-                        <tr>
-                            <th>{% translate "Last kill" %}</th>
-                            <td>{{ result.last_kill_date }}</td>
-                        </tr>
-                        <tr>
-                            <th>{% translate "Last loss" %}</th>
-                            <td>{{ result.last_loss_date }}</td>
-                        </tr>
-                        {% if result.top_ships_kills %}
-                            <tr>
-                                <th>{% translate "Top Ships (Kills)" %}</th>
-                                <td>
-                                    {% for ship in result.top_ships_kills %}
-                                        {{ ship.name }} ({{ ship.count }}){% if not forloop.last %}, {% endif %}
-                                    {% endfor %}
-                                </td>
-                            </tr>
-                        {% endif %}
-                        {% if result.top_ships_losses %}
-                            <tr>
-                                <th>{% translate "Top Ships (Losses)" %}</th>
-                                <td>
-                                    {% for ship in result.top_ships_losses %}
-                                        {{ ship.name }} ({{ ship.count }}){% if not forloop.last %}, {% endif %}
-                                    {% endfor %}
-                                </td>
-                            </tr>
-                        {% endif %}
-                        {% if result.triggers %}
-                            <tr>
-                                <th>{% translate "Triggers" %}</th>
-                                <td>{{ result.triggers|join:", " }}</td>
-                            </tr>
-                        {% endif %}
-                        {% if result.suspicious_alliance %}
-                            <tr>
-                                <th>{% translate "Suspicious alliance link" %}</th>
-                                <td>{{ result.suspicious_alliance }}</td>
-                            </tr>
-                        {% endif %}
-                    </table>
-                {% endif %}
+                    </thead>
+                    <tbody></tbody>
+                </table>
             </div>
         </div>
-    {% endif %}
+
+    </div>
 {% endblock %}
 
 {% block extra_javascript %}
+    {% include "bundles/datatables-2-js-bs5.html" %}
 {% endblock %}
 
 {% block extra_css %}
+    {% include "bundles/datatables-2-css-bs5.html" %}
+    <style>
+        #zkb-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(3px);
+    border-radius: 0.375rem;
+}
+
+#zkb-overlay .spinner-border,
+#zkb-overlay #zkb-progress-text {
+    color: #ffffff !important;
+}
+
+.zkb-export-btn {
+    background-color: #2c8a4b;
+    border-color: #2c8a4b;
+    color: #ffffff;
+}
+
+.zkb-export-btn:hover {
+    background-color: #256e3c;
+    border-color: #256e3c;
+    color: #ffffff;
+}
+    </style>
 {% endblock %}
 
 {% block extra_script %}
+        (function () {
+            const form = document.getElementById('zkb-check-form');
+            const overlay = document.getElementById('zkb-overlay');
+            const progressText = document.getElementById('zkb-progress-text');
+            const resultsCard = document.getElementById('zkb-results-card');
+            const exportButton = document.getElementById('zkb-export-excel');
+
+            let dataTable = null;
+
+            const startCheckUrl = "{% url 'zkbchecker:start_check' %}";
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            let pollTimer = null;
+            let lastResult = null;
+
+            function showOverlay() {
+                overlay.classList.remove('d-none');
+            }
+
+            function hideOverlay() {
+                overlay.classList.add('d-none');
+            }
+
+            function pollStatus(taskId) {
+                const statusUrl = `/zkbchecker/check-status/${taskId}/`;
+
+                pollTimer = setInterval(() => {
+                    fetch(statusUrl)
+                        .then((r) => r.json())
+                        .then((data) => {
+                            if (data.state === 'PROGRESS' && data.meta) {
+                                progressText.textContent =
+                                    `${data.meta.current} / ${data.meta.total}`;
+                            }
+
+                            if (data.state === 'SUCCESS') {
+                                clearInterval(pollTimer);
+                                hideOverlay();
+                                lastResult = data.result;
+                                renderResults(data.result);
+                            }
+
+                            if (data.state === 'FAILURE') {
+                                clearInterval(pollTimer);
+                                hideOverlay();
+                                alert("{% translate 'Something went wrong. Please try again.' %}");
+                            }
+                        })
+                        .catch(() => {
+                            clearInterval(pollTimer);
+                            hideOverlay();
+                        });
+                }, 2000);
+            }
+
+            function renderResults(results) {
+    const rows = results.map((r) => {
+        if (!r.found) {
+            return [r.name, '', '', '', '', '', '', '', '', '', '', '', 'NOT_FOUND', ''];
+        }
+
+        const topKills = (r.top_ships_kills || [])
+            .map((s) => `${s.name} (${s.count})`)
+            .join(', ');
+        const topLosses = (r.top_ships_losses || [])
+            .map((s) => `${s.name} (${s.count})`)
+            .join(', ');
+
+        return [
+            r.name,
+            r.corporation_name,
+            r.alliance_name,
+            r.birthday,
+            r.kills_total,
+            r.losses_total,
+            `${r.solo_kills} / ${r.solo_losses}`,
+            `${r.danger_ratio} / ${r.gang_ratio}`,
+            r.last_kill_date,
+            r.last_loss_date,
+            topKills,
+            topLosses,
+            (r.triggers || []).join(', '),
+            r.suspicious_alliance || '',
+        ];
+    });
+
+    if (dataTable) {
+        dataTable.clear();
+        dataTable.rows.add(rows);
+        dataTable.draw();
+    } else {
+        dataTable = new DataTable('#zkb-results-table', {
+            data: rows,
+            columns: [
+                {title: "{% translate 'Name' %}"},
+                {title: "{% translate 'Corporation' %}"},
+                {title: "{% translate 'Alliance' %}"},
+                {title: "{% translate 'Birthday' %}"},
+                {title: "{% translate 'Kills' %}"},
+                {title: "{% translate 'Losses' %}"},
+                {title: "{% translate 'Solo K/L' %}"},
+                {title: "{% translate 'Danger/Gang' %}"},
+                {title: "{% translate 'Last Kill' %}"},
+                {title: "{% translate 'Last Loss' %}"},
+                {title: "{% translate 'Top Ships (Kills)' %}"},
+                {title: "{% translate 'Top Ships (Losses)' %}"},
+                {title: "{% translate 'Triggers' %}"},
+                {title: "{% translate 'Suspicious Alliance' %}"},
+            ],
+            pageLength: 20,
+            lengthMenu: [10, 20, 50],
+            order: [],
+        });
+    }
+
+    resultsCard.classList.remove('d-none');
+    exportButton.classList.remove('d-none');
+}
+
+            form.addEventListener('submit', function (event) {
+                event.preventDefault();
+
+                const namesRaw = document.getElementById('names').value;
+                const names = namesRaw
+                    .split('\n')
+                    .map((n) => n.trim())
+                    .filter((n) => n.length > 0);
+
+                if (names.length === 0) {
+                    return;
+                }
+
+                resultsCard.classList.add('d-none');
+                exportButton.classList.add('d-none');
+                progressText.textContent = '';
+                showOverlay();
+
+                fetch(startCheckUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken,
+                    },
+                    body: JSON.stringify({names: names}),
+                })
+                    .then((r) => r.json())
+                    .then((data) => {
+                        if (data.task_id) {
+                            pollStatus(data.task_id);
+                        } else {
+                            hideOverlay();
+                        }
+                    })
+                    .catch(() => {
+                        hideOverlay();
+                    });
+            });
+        })();
 {% endblock %}
