@@ -19,7 +19,7 @@ class ZkbCheckerMenuItem(MenuItemHook):
         MenuItemHook.__init__(
             self,
             _("ZKB Checker"),
-            "fas fa-cube fa-fw",
+            "fas fa-user-secret fa-fw",
             "zkbchecker:index",
             navactive=["zkbchecker:"],
         )
