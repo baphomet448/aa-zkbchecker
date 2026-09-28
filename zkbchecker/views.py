@@ -1,88 +1,65 @@
 """App Views"""
 
-# Django
+import json
+
 from django.contrib.auth.decorators import login_required, permission_required
 from django.core.handlers.wsgi import WSGIRequest
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
+from django.views.decorators.http import require_POST
 
-from zkbchecker.esi_client import resolve_names, resolve_ids
-from zkbchecker.zkb_client import get_stats, get_losses, get_kills
-from zkbchecker.triggers import evaluate_triggers
+from celery.result import AsyncResult
+
+from zkbchecker.tasks import check_characters_task
 
 
 @login_required
 @permission_required("zkbchecker.basic_access")
 def index(request: WSGIRequest) -> HttpResponse:
     """
-    Index view: shows the input form, and (for a single character
-    submitted) the result inline on the same page.
+    Index view: shows the input form and an empty results area.
+    Results are loaded asynchronously via JavaScript after the check
+    completes in the background (see start_check / check_status).
     """
-    result = None
-
-    if request.method == "POST":
-        names_raw = request.POST.get("names", "")
-        names = [n.strip() for n in names_raw.splitlines() if n.strip()]
-
-        if len(names) == 1:
-            result = _check_single_character(names[0])
-
-    context = {"result": result}
-
-    return render(request, "zkbchecker/index.html", context)
+    return render(request, "zkbchecker/index.html", {})
 
 
-def _check_single_character(name: str) -> dict:
-    """Run the full check for a single character name and return
-    a dict ready for template rendering."""
-    resolved = resolve_names([name])
-    if not resolved:
-        return {"name": name, "found": False}
+@login_required
+@permission_required("zkbchecker.basic_access")
+@require_POST
+def start_check(request: WSGIRequest) -> JsonResponse:
+    """Start a background check for the submitted character names and
+    return the Celery task ID so the client can poll for the result."""
+    try:
+        payload = json.loads(request.body)
+    except (json.JSONDecodeError, TypeError):
+        return JsonResponse({"error": "Invalid request body"}, status=400)
 
-    character_id = resolved[0]["id"]
-    stats = get_stats(character_id)
-    losses = get_losses(character_id)
-    kills = get_kills(character_id)
+    names = payload.get("names", [])
+    names = [n.strip() for n in names if isinstance(n, str) and n.strip()]
 
-    triggers = evaluate_triggers(stats, losses["all_ships"], kills["victim_ships"])
+    if not names:
+        return JsonResponse({"error": "No character names provided"}, status=400)
 
-    # Collect all IDs that need a human-readable name: corp, alliance,
-    # and every ship type seen in top kills/losses.
-    ids_to_resolve = {stats["corporation_id"], stats["alliance_id"]}
-    for ship in stats["all_ships_used"][:3] + losses["top_ships"]:
-        ids_to_resolve.add(ship["shipTypeID"])
-    ids_to_resolve.discard(0)
+    async_result = check_characters_task.delay(names)
 
-    names_by_id = {}
-    if ids_to_resolve:
-        for entity in resolve_ids(list(ids_to_resolve)):
-            names_by_id[entity["id"]] = entity["name"]
+    return JsonResponse({"task_id": async_result.id})
 
-    top_ships_kills = [
-        {"name": names_by_id.get(ship["shipTypeID"], str(ship["shipTypeID"])), "count": ship["kills"]}
-        for ship in stats["all_ships_used"][:3]
-    ]
-    top_ships_losses = [
-        {"name": names_by_id.get(ship["shipTypeID"], str(ship["shipTypeID"])), "count": ship["kills"]}
-        for ship in losses["top_ships"]
-    ]
 
-    return {
-        "name": stats["name"],
-        "found": True,
-        "corporation_name": names_by_id.get(stats["corporation_id"], ""),
-        "alliance_name": names_by_id.get(stats["alliance_id"], ""),
-        "birthday": stats["birthday"],
-        "kills_total": stats["kills_total"],
-        "losses_total": stats["losses_total"],
-        "solo_kills": stats["solo_kills"],
-        "solo_losses": stats["solo_losses"],
-        "danger_ratio": stats["danger_ratio"],
-        "gang_ratio": stats["gang_ratio"],
-        "last_kill_date": kills["last_kill_date"],
-        "last_loss_date": losses["last_loss_date"],
-        "top_ships_kills": top_ships_kills,
-        "top_ships_losses": top_ships_losses,
-        "triggers": triggers,
-        "suspicious_alliance": kills["suspicious_alliance"],
-    }
+@login_required
+@permission_required("zkbchecker.basic_access")
+def check_status(request: WSGIRequest, task_id: str) -> JsonResponse:
+    """Return the current status of a background check task, and its
+    result once it has finished."""
+    async_result = AsyncResult(task_id)
+
+    response = {"state": async_result.state}
+
+    if async_result.state == "PROGRESS":
+        response["meta"] = async_result.info
+    elif async_result.state == "SUCCESS":
+        response["result"] = async_result.result
+    elif async_result.state == "FAILURE":
+        response["error"] = str(async_result.info)
+
+    return JsonResponse(response)
