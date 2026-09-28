@@ -72,6 +72,22 @@ and selecting one fills in the ship type ID automatically.
 
 Requires the `zkbchecker.manage_config` permission.
 
+## Known Issue: aiopenapi3 Compatibility
+
+If your Alliance Auth's `django-esi` version predates its fix for
+`aiopenapi3` 0.11.0+ breaking changes, you may see an error like
+`ValueError: invalid return value annotation for session_factory`
+when using EVE SSO login (unrelated to this plugin directly, but it
+can surface after installing new dependencies). If you hit this,
+pin `aiopenapi3` below 0.11.0:
+
+```bash
+pip install "aiopenapi3<0.11.0"
+```
+
+This is a known upstream issue, tracked by the Alliance Auth
+community; check your `django-esi` version for a permanent fix.
+
 ## Installation
 
 Install the package into your Alliance Auth virtual environment:
