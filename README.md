@@ -43,6 +43,17 @@ INSTALLED_APPS += [
 ]
 ```
 
+This plugin uses Celery to process batch character checks in the
+background. Your Alliance Auth instance already runs Celery, but the
+result backend needs to be explicitly configured so task results can
+be retrieved. Add this to your `local.py` if not already set:
+
+```python
+CELERY_RESULT_BACKEND = "redis://localhost:6379/0"
+```
+
+(adjust the Redis URL if your setup differs from the default)
+
 Run migrations and restart your Alliance Auth server:
 
 ```bash
