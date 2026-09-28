@@ -6,13 +6,82 @@
 {% block details %}
     <div class="card card-primary">
         <div class="card-header">
-            <div class="card-title">{% translate "Headline" %}</div>
+            <div class="card-title">{% translate "ZKB Character Check" %}</div>
         </div>
 
         <div class="card-body">
-            {{ text }}
+            <form method="post">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="names" class="form-label">
+                        {% translate "Character name" %}
+                    </label>
+                    <textarea
+                        name="names"
+                        id="names"
+                        class="form-control"
+                        rows="3"
+                        placeholder="{% translate 'Enter one character name' %}"
+                    ></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    {% translate "Check" %}
+                </button>
+            </form>
         </div>
     </div>
+
+    {% if result %}
+        <div class="card card-primary mt-3">
+            <div class="card-header">
+                <div class="card-title">{{ result.name }}</div>
+            </div>
+            <div class="card-body">
+                {% if not result.found %}
+                    <p>{% translate "Character not found on zKillboard." %}</p>
+                {% else %}
+                    <table class="table">
+                        <tr>
+                            <th>{% translate "Corporation ID" %}</th>
+                            <td>{{ result.corporation_id }}</td>
+                        </tr>
+                        <tr>
+                            <th>{% translate "Alliance ID" %}</th>
+                            <td>{{ result.alliance_id }}</td>
+                        </tr>
+                        <tr>
+                            <th>{% translate "Birthday" %}</th>
+                            <td>{{ result.birthday }}</td>
+                        </tr>
+                        <tr>
+                            <th>{% translate "Kills / Losses" %}</th>
+                            <td>{{ result.kills_total }} / {{ result.losses_total }}</td>
+                        </tr>
+                        <tr>
+                            <th>{% translate "Last kill" %}</th>
+                            <td>{{ result.last_kill_date }}</td>
+                        </tr>
+                        <tr>
+                            <th>{% translate "Last loss" %}</th>
+                            <td>{{ result.last_loss_date }}</td>
+                        </tr>
+                        {% if result.triggers %}
+                            <tr>
+                                <th>{% translate "Triggers" %}</th>
+                                <td>{{ result.triggers|join:", " }}</td>
+                            </tr>
+                        {% endif %}
+                        {% if result.suspicious_alliance %}
+                            <tr>
+                                <th>{% translate "Suspicious alliance link" %}</th>
+                                <td>{{ result.suspicious_alliance }}</td>
+                            </tr>
+                        {% endif %}
+                    </table>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
 {% endblock %}
 
 {% block extra_javascript %}

@@ -3,13 +3,13 @@
 # Django
 from django.apps import AppConfig
 
-# AA Example App
+# AA ZKB Checker App
 from zkbchecker import __version__
 
 
-class ExampleConfig(AppConfig):
+class ZkbCheckerConfig(AppConfig):
     """App Config"""
 
     name = "zkbchecker"
     label = "zkbchecker"
-    verbose_name = f"Example App v{__version__}"
+    verbose_name = f"ZKB Checker v{__version__}"
