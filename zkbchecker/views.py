@@ -7,10 +7,13 @@ from django.core.handlers.wsgi import WSGIRequest
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.views.decorators.http import require_POST
+from django.utils import timezone
 
 from celery.result import AsyncResult
 
 from zkbchecker.tasks import check_characters_task
+
+from zkbchecker.excel_export import build_workbook
 
 
 @login_required
@@ -63,3 +66,28 @@ def check_status(request: WSGIRequest, task_id: str) -> JsonResponse:
         response["error"] = str(async_result.info)
 
     return JsonResponse(response)
+
+@login_required
+@permission_required("zkbchecker.basic_access")
+@require_POST
+def export_excel(request: WSGIRequest) -> HttpResponse:
+    """Build and return an Excel file from the results submitted by
+    the client (the same results already shown in the DataTable)."""
+    try:
+        payload = json.loads(request.body)
+    except (json.JSONDecodeError, TypeError):
+        return JsonResponse({"error": "Invalid request body"}, status=400)
+
+    results = payload.get("results", [])
+    if not results:
+        return JsonResponse({"error": "No results provided"}, status=400)
+
+    buffer = build_workbook(results)
+
+    response = HttpResponse(
+        buffer.getvalue(),
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    )
+    filename = f"zkb_check_{timezone.now().strftime('%Y-%m-%d_%H-%M')}.xlsx"
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+    return response

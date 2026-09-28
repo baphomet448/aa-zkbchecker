@@ -128,6 +128,7 @@
             let dataTable = null;
 
             const startCheckUrl = "{% url 'zkbchecker:start_check' %}";
+            const exportExcelUrl = "{% url 'zkbchecker:export_excel' %}";
             const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
             let pollTimer = null;
@@ -236,7 +237,31 @@
     resultsCard.classList.remove('d-none');
     exportButton.classList.remove('d-none');
 }
+exportButton.addEventListener('click', function () {
+                if (!lastResult) {
+                    return;
+                }
 
+                fetch(exportExcelUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken,
+                    },
+                    body: JSON.stringify({results: lastResult}),
+                })
+                    .then((r) => r.blob())
+                    .then((blob) => {
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = 'zkb_check_results.xlsx';
+                        document.body.appendChild(a);
+                        a.click();
+                        a.remove();
+                        window.URL.revokeObjectURL(url);
+                    });
+            });
             form.addEventListener('submit', function (event) {
                 event.preventDefault();
 
