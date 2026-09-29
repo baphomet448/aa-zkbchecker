@@ -1,5 +1,25 @@
 [
   {
+    "id": 33702,
+    "name": "'Magpie' Mobile Tractor Unit"
+  },
+  {
+    "id": 33700,
+    "name": "'Packrat' Mobile Tractor Unit"
+  },
+  {
+    "id": 85980,
+    "name": "'Seneschal' Mercenary Den"
+  },
+  {
+    "id": 33520,
+    "name": "'Wetu' Mobile Depot"
+  },
+  {
+    "id": 33522,
+    "name": "'Yurt' Mobile Depot"
+  },
+  {
     "id": 58745,
     "name": "AIR Civilian Astero"
   },
@@ -44,12 +64,20 @@
     "name": "Alligator"
   },
   {
+    "id": 73270,
+    "name": "Amarr Listening Outpost"
+  },
+  {
     "id": 29328,
     "name": "Amarr Media Shuttle"
   },
   {
     "id": 3768,
     "name": "Amarr Police Frigate"
+  },
+  {
+    "id": 73225,
+    "name": "Amarr Propaganda Broadcast Structure"
   },
   {
     "id": 11134,
@@ -264,6 +292,14 @@
     "name": "Buzzard"
   },
   {
+    "id": 60244,
+    "name": "CONCORD Rogue Analysis Beacon"
+  },
+  {
+    "id": 92183,
+    "name": "CONCORD-Carrier Rogue Analysis Beacon"
+  },
+  {
     "id": 42246,
     "name": "Caedes"
   },
@@ -272,12 +308,20 @@
     "name": "Caiman"
   },
   {
+    "id": 73272,
+    "name": "Caldari Listening Outpost"
+  },
+  {
     "id": 29330,
     "name": "Caldari Media Shuttle"
   },
   {
     "id": 17619,
     "name": "Caldari Navy Hookbill"
+  },
+  {
+    "id": 73227,
+    "name": "Caldari Propaganda Broadcast Structure"
   },
   {
     "id": 672,
@@ -448,6 +492,10 @@
     "name": "Confessor"
   },
   {
+    "id": 81951,
+    "name": "Consortium Mobile Tractor Unit"
+  },
+  {
     "id": 32876,
     "name": "Corax"
   },
@@ -470,6 +518,10 @@
   {
     "id": 34496,
     "name": "Council Diplomatic Shuttle"
+  },
+  {
+    "id": 59630,
+    "name": "Covert Mobile Cynosural Beacon"
   },
   {
     "id": 17476,
@@ -548,12 +600,32 @@
     "name": "Deacon"
   },
   {
+    "id": 33585,
+    "name": "Defunct Amarr Encounter Surveillance System"
+  },
+  {
+    "id": 33595,
+    "name": "Defunct Caldari Encounter Surveillance System"
+  },
+  {
+    "id": 33608,
+    "name": "Defunct Gallente Encounter Surveillance System"
+  },
+  {
+    "id": 33610,
+    "name": "Defunct Minmatar Encounter Surveillance System"
+  },
+  {
     "id": 12023,
     "name": "Deimos"
   },
   {
     "id": 81046,
     "name": "Deluge"
+  },
+  {
+    "id": 48899,
+    "name": "Deployable Billboard"
   },
   {
     "id": 12017,
@@ -716,12 +788,20 @@
     "name": "Gaia"
   },
   {
+    "id": 73273,
+    "name": "Gallente Listening Outpost"
+  },
+  {
     "id": 29332,
     "name": "Gallente Media Shuttle"
   },
   {
     "id": 595,
     "name": "Gallente Police Ship"
+  },
+  {
+    "id": 73228,
+    "name": "Gallente Propaganda Broadcast Structure"
   },
   {
     "id": 11129,
@@ -834,6 +914,10 @@
   {
     "id": 72904,
     "name": "Heron Navy Issue"
+  },
+  {
+    "id": 58906,
+    "name": "Highsec Authorized Mobile Cynosural Beacon"
   },
   {
     "id": 651,
@@ -1052,6 +1136,10 @@
     "name": "Laelaps"
   },
   {
+    "id": 33479,
+    "name": "Large Mobile Siphon Unit"
+  },
+  {
     "id": 29986,
     "name": "Legion"
   },
@@ -1164,6 +1252,10 @@
     "name": "Maulus Navy Issue"
   },
   {
+    "id": 33478,
+    "name": "Medium Mobile Siphon Unit"
+  },
+  {
     "id": 616,
     "name": "Medusa"
   },
@@ -1194,6 +1286,10 @@
   {
     "id": 78333,
     "name": "Mekubal"
+  },
+  {
+    "id": 85230,
+    "name": "Mercenary Den"
   },
   {
     "id": 603,
@@ -1232,12 +1328,20 @@
     "name": "Mimir"
   },
   {
+    "id": 73271,
+    "name": "Minmatar Listening Outpost"
+  },
+  {
     "id": 29334,
     "name": "Minmatar Media Shuttle"
   },
   {
     "id": 600,
     "name": "Minmatar Peacekeeper Ship"
+  },
+  {
+    "id": 73226,
+    "name": "Minmatar Propaganda Broadcast Structure"
   },
   {
     "id": 11132,
@@ -1250,6 +1354,70 @@
   {
     "id": 623,
     "name": "Moa"
+  },
+  {
+    "id": 34120,
+    "name": "Mobile Competitive Vault"
+  },
+  {
+    "id": 57319,
+    "name": "Mobile Cynosural Beacon"
+  },
+  {
+    "id": 33476,
+    "name": "Mobile Cynosural Inhibitor"
+  },
+  {
+    "id": 33474,
+    "name": "Mobile Depot"
+  },
+  {
+    "id": 12200,
+    "name": "Mobile Large Warp Disruptor I"
+  },
+  {
+    "id": 26888,
+    "name": "Mobile Large Warp Disruptor II"
+  },
+  {
+    "id": 12199,
+    "name": "Mobile Medium Warp Disruptor I"
+  },
+  {
+    "id": 26890,
+    "name": "Mobile Medium Warp Disruptor II"
+  },
+  {
+    "id": 33591,
+    "name": "Mobile Micro Jump Unit"
+  },
+  {
+    "id": 58904,
+    "name": "Mobile Observatory"
+  },
+  {
+    "id": 90037,
+    "name": "Mobile Phase Anchor"
+  },
+  {
+    "id": 56701,
+    "name": "Mobile Sanguine Harvester"
+  },
+  {
+    "id": 33589,
+    "name": "Mobile Scan Inhibitor"
+  },
+  {
+    "id": 12198,
+    "name": "Mobile Small Warp Disruptor I"
+  },
+  {
+    "id": 26892,
+    "name": "Mobile Small Warp Disruptor II"
+  },
+  {
+    "id": 33475,
+    "name": "Mobile Tractor Unit"
   },
   {
     "id": 42241,
@@ -1604,6 +1772,14 @@
     "name": "Python"
   },
   {
+    "id": 75677,
+    "name": "QA 'Shady' Mobile Observatory"
+  },
+  {
+    "id": 90161,
+    "name": "QA Mobile Phase Anchor"
+  },
+  {
     "id": 32846,
     "name": "Quafe Catalyst"
   },
@@ -1852,6 +2028,18 @@
     "name": "Sleipnir"
   },
   {
+    "id": 33581,
+    "name": "Small Mobile 'Hybrid' Siphon Unit"
+  },
+  {
+    "id": 33583,
+    "name": "Small Mobile 'Rote' Siphon Unit"
+  },
+  {
+    "id": 33477,
+    "name": "Small Mobile Siphon Unit"
+  },
+  {
     "id": 81008,
     "name": "Squall"
   },
@@ -1910,6 +2098,18 @@
   {
     "id": 619,
     "name": "Swordspine"
+  },
+  {
+    "id": 28770,
+    "name": "Syndicate Mobile Large Warp Disruptor"
+  },
+  {
+    "id": 28772,
+    "name": "Syndicate Mobile Medium Warp Disruptor"
+  },
+  {
+    "id": 28774,
+    "name": "Syndicate Mobile Small Warp Disruptor"
   },
   {
     "id": 33081,
@@ -2034,6 +2234,18 @@
   {
     "id": 81047,
     "name": "Torrent"
+  },
+  {
+    "id": 26849,
+    "name": "Tournament Bubble"
+  },
+  {
+    "id": 33990,
+    "name": "Tournament Micro Jump Unit"
+  },
+  {
+    "id": 36523,
+    "name": "Tournament Practice Unit"
   },
   {
     "id": 593,
