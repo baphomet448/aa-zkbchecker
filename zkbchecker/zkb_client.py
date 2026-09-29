@@ -3,6 +3,8 @@
 import requests
 from collections import Counter
 from datetime import datetime, timedelta, timezone
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 LOSSES_LOOKBACK_MONTHS = 4
 
@@ -11,6 +13,35 @@ SUSPICIOUS_FLEET_LOOKBACK_MONTHS = 8
 
 ZKB_BASE_URL = "https://zkillboard.com/api"
 USER_AGENT = "ZkbChecker-AA-Plugin/1.0 (contact: baphomet448 via Discord)"
+ZKB_TIMEOUT = 30
+
+_session = requests.Session()
+_retry = Retry(
+    total=3,
+    backoff_factor=2,
+    status_forcelist=[429, 500, 502, 503, 504],
+    allowed_methods=["GET"],
+)
+_session.mount("https://", HTTPAdapter(max_retries=_retry))
+
+def _zkb_get(url: str) -> requests.Response:
+    """GET a zKillboard URL with our shared session (which retries on
+    5xx/429), plus an extra manual retry specifically for read
+    timeouts, which the session's built-in retry does not cover."""
+    last_exc = None
+    for attempt in range(3):
+        try:
+            response = _session.get(
+                url,
+                headers={"User-Agent": USER_AGENT},
+                timeout=ZKB_TIMEOUT,
+            )
+            response.raise_for_status()
+            return response
+        except requests.exceptions.Timeout as exc:
+            last_exc = exc
+            continue
+    raise last_exc
 
 def _get_excluded_ship_ids() -> set[int]:
     from zkbchecker.models import ExcludedShip
@@ -37,13 +68,7 @@ def get_stats(character_id: int) -> dict:
     danger_ratio, gang_ratio, top_ships_used (all, not just top 3),
     ganked_kills.
     """
-    response = requests.get(
-        f"{ZKB_BASE_URL}/stats/characterID/{character_id}/",
-        headers={"User-Agent": USER_AGENT},
-        timeout=15,
-        allow_redirects=True,
-    )
-    response.raise_for_status()
+    response = _zkb_get(f"{ZKB_BASE_URL}/stats/characterID/{character_id}/")
     raw = response.json()
 
     info = raw.get("info") or {}
@@ -81,12 +106,7 @@ def get_losses(character_id: int) -> dict:
     LOSSES_LOOKBACK_MONTHS months).
     """
     excluded_ship_ids = _get_excluded_ship_ids()
-    response = requests.get(
-        f"{ZKB_BASE_URL}/losses/characterID/{character_id}/",
-        headers={"User-Agent": USER_AGENT},
-        timeout=15,
-    )
-    response.raise_for_status()
+    response = _zkb_get(f"{ZKB_BASE_URL}/losses/characterID/{character_id}/")
     entries = response.json()
 
     if not entries:
@@ -134,12 +154,7 @@ def get_kills(character_id: int) -> dict:
     kills, within SUSPICIOUS_FLEET_LOOKBACK_MONTHS months, or
     empty string if none found).
     """
-    response = requests.get(
-        f"{ZKB_BASE_URL}/kills/characterID/{character_id}/",
-        headers={"User-Agent": USER_AGENT},
-        timeout=15,
-    )
-    response.raise_for_status()
+    response = _zkb_get(f"{ZKB_BASE_URL}/kills/characterID/{character_id}/")
     entries = response.json()
 
     result = {"last_kill_date": "", "victim_ships": [], "suspicious_alliance": ""}

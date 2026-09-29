@@ -2,6 +2,7 @@
 
 # Standard Library
 import logging
+import time
 
 # Third Party
 from celery import shared_task
@@ -11,6 +12,8 @@ from zkbchecker.zkb_client import get_stats, get_losses, get_kills
 from zkbchecker.triggers import evaluate_triggers
 
 logger = logging.getLogger(__name__)
+
+ZKB_REQUEST_DELAY_SECONDS = 1
 
 
 @shared_task(bind=True)
@@ -32,9 +35,18 @@ def check_characters_task(self, names: list[str]) -> list[dict]:
             continue
 
         character_id = entry["id"]
-        stats = get_stats(character_id)
-        losses = get_losses(character_id)
-        kills = get_kills(character_id)
+
+        try:
+            stats = get_stats(character_id)
+            time.sleep(ZKB_REQUEST_DELAY_SECONDS)
+            losses = get_losses(character_id)
+            time.sleep(ZKB_REQUEST_DELAY_SECONDS)
+            kills = get_kills(character_id)
+        except Exception:
+            logger.exception("zKillboard check failed for %s (id=%s)", name, character_id)
+            results.append({"name": name, "found": True, "error": True})
+            continue
+
         triggers = evaluate_triggers(stats, losses["all_ships"], kills["victim_ships"])
 
         ids_to_resolve = {stats["corporation_id"], stats["alliance_id"]}
@@ -75,5 +87,7 @@ def check_characters_task(self, names: list[str]) -> list[dict]:
             "triggers": triggers,
             "suspicious_alliance": kills["suspicious_alliance"],
         })
+
+        time.sleep(ZKB_REQUEST_DELAY_SECONDS)
 
     return results
