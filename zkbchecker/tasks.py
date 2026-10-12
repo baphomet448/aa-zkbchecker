@@ -8,7 +8,13 @@ import time
 from celery import shared_task
 
 from zkbchecker.esi_client import resolve_names, resolve_ids
-from zkbchecker.zkb_client import get_stats, get_losses, get_kills
+from zkbchecker.zkb_client import (
+    get_excluded_ship_ids,
+    get_kills,
+    get_losses,
+    get_stats,
+    get_suspicious_entities,
+)
 from zkbchecker.triggers import evaluate_triggers
 
 logger = logging.getLogger(__name__)
@@ -22,6 +28,11 @@ def check_characters_task(self, names: list[str]) -> list[dict]:
     a list of result dicts, one per name, ready for template/export use.
     """
     total = len(names)
+    # Config lists are read from the DB once per batch, not once per
+    # character. Edits made in the settings page while a batch is
+    # running apply from the next batch.
+    excluded_ship_ids = get_excluded_ship_ids()
+    suspicious_entities = get_suspicious_entities()
     resolved = resolve_names(names)
     resolved_by_name_lower = {entry["name"].lower(): entry for entry in resolved}
 
@@ -39,9 +50,9 @@ def check_characters_task(self, names: list[str]) -> list[dict]:
         try:
             stats = get_stats(character_id)
             time.sleep(ZKB_REQUEST_DELAY_SECONDS)
-            losses = get_losses(character_id)
+            losses = get_losses(character_id, excluded_ship_ids)
             time.sleep(ZKB_REQUEST_DELAY_SECONDS)
-            kills = get_kills(character_id)
+            kills = get_kills(character_id, suspicious_entities)
         except Exception:
             logger.exception("zKillboard check failed for %s (id=%s)", name, character_id)
             results.append({"name": name, "found": True, "error": True})

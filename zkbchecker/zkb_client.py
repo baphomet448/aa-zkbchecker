@@ -43,12 +43,12 @@ def _zkb_get(url: str) -> requests.Response:
             continue
     raise last_exc
 
-def _get_excluded_ship_ids() -> set[int]:
+def get_excluded_ship_ids() -> set[int]:
     from zkbchecker.models import ExcludedShip
     return set(ExcludedShip.objects.values_list("ship_type_id", flat=True))
 
 
-def _get_suspicious_entities() -> tuple[dict[int, str], dict[int, str]]:
+def get_suspicious_entities() -> tuple[dict[int, str], dict[int, str]]:
     from zkbchecker.models import SuspiciousEntity
     alliances = {}
     corporations = {}
@@ -97,7 +97,7 @@ def get_stats(character_id: int) -> dict:
         "ganked_kills": ganked.get("shipsDestroyed", 0),
     }
 
-def get_losses(character_id: int) -> dict:
+def get_losses(character_id: int, excluded_ship_ids: set[int] | None = None) -> dict:
     """Fetch character losses from zKillboard and summarize them.
 
     Returns a dict with:
@@ -105,7 +105,8 @@ def get_losses(character_id: int) -> dict:
     both excluding junk ship types and limited to the last
     LOSSES_LOOKBACK_MONTHS months).
     """
-    excluded_ship_ids = _get_excluded_ship_ids()
+    if excluded_ship_ids is None:
+        excluded_ship_ids = get_excluded_ship_ids()
     response = _zkb_get(f"{ZKB_BASE_URL}/losses/characterID/{character_id}/")
     entries = response.json()
 
@@ -143,7 +144,10 @@ def get_losses(character_id: int) -> dict:
         "all_ships": all_ships,
     }
 
-def get_kills(character_id: int) -> dict:
+def get_kills(
+    character_id: int,
+    suspicious_entities: tuple[dict[int, str], dict[int, str]] | None = None,
+) -> dict:
     """Fetch character kills from zKillboard and summarize them.
 
     Returns a dict with:
@@ -183,7 +187,9 @@ def get_kills(character_id: int) -> dict:
     ]
 
     # Suspicious fleet check: last N kills, within M months
-    suspicious_alliances, suspicious_corporations = _get_suspicious_entities()
+    if suspicious_entities is None:
+        suspicious_entities = get_suspicious_entities()
+    suspicious_alliances, suspicious_corporations = suspicious_entities
     fleet_cutoff = datetime.now(timezone.utc) - timedelta(days=30 * SUSPICIOUS_FLEET_LOOKBACK_MONTHS)
     for entry in entries[:SUSPICIOUS_FLEET_LOOKBACK_KILLS]:
         killmail_time_str = entry.get("killmail_time", "")
