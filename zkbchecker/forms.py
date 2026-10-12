@@ -3,6 +3,7 @@
 import re
 
 from django import forms
+from django.utils.translation import gettext_lazy as _
 
 from zkbchecker.models import ExcludedShip, SuspiciousEntity
 
@@ -28,9 +29,11 @@ class SuspiciousEntityForm(BootstrapFieldsMixin, forms.ModelForm):
     and type manually."""
 
     zkillboard_url = forms.CharField(
-        label="zKillboard URL",
-        help_text="Paste a zKillboard alliance or corporation URL, "
-                  "e.g. https://zkillboard.com/alliance/99012042/",
+        label=_("zKillboard URL"),
+        help_text=_(
+            "Paste a zKillboard alliance or corporation URL, "
+            "e.g. https://zkillboard.com/alliance/99012042/"
+        ),
     )
 
     class Meta:
@@ -48,11 +51,15 @@ class SuspiciousEntityForm(BootstrapFieldsMixin, forms.ModelForm):
         self.fields["zkillboard_url"].widget.attrs["placeholder"] = (
             "https://zkillboard.com/alliance/99012042/"
         )
-        self.fields["label"].widget.attrs["placeholder"] = "Label"
-        self.fields["zkillboard_url"].error_messages["required"] = (
+        self.fields["zkillboard_url"].error_messages["required"] = _(
             "Please paste a zKillboard URL."
         )
-        self.fields["label"].error_messages["required"] = "Please enter a label."
+        self.fields["label"].label = _("Label")
+        self.fields["label"].help_text = _(
+            "Displayed in results when this entity is matched."
+        )
+        self.fields["label"].widget.attrs["placeholder"] = _("Label")
+        self.fields["label"].error_messages["required"] = _("Please enter a label.")
         self._apply_bootstrap()
 
     def clean_zkillboard_url(self):
@@ -60,8 +67,10 @@ class SuspiciousEntityForm(BootstrapFieldsMixin, forms.ModelForm):
         match = ZKB_URL_PATTERN.search(url)
         if not match:
             raise forms.ValidationError(
-                "Could not find a valid zKillboard alliance/corporation URL "
-                "in the provided text."
+                _(
+                    "Could not find a valid zKillboard alliance/corporation URL "
+                    "in the provided text."
+                )
             )
         self.cleaned_data["entity_type"] = match.group(1)
         self.cleaned_data["entity_id"] = int(match.group(2))
@@ -79,7 +88,7 @@ class SuspiciousEntityForm(BootstrapFieldsMixin, forms.ModelForm):
                 duplicates = duplicates.exclude(pk=self.instance.pk)
             if duplicates.exists():
                 raise forms.ValidationError(
-                    "This alliance/corporation is already in the list."
+                    _("This alliance/corporation is already in the list.")
                 )
         return cleaned
 
@@ -106,11 +115,16 @@ class ExcludedShipForm(BootstrapFieldsMixin, forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["name"].widget.attrs["placeholder"] = (
-            "Start typing a ship or item name..."
-        )
-        self.fields["name"].error_messages["required"] = "Please enter an item name."
-        self.fields["ship_type_id"].error_messages["required"] = (
+        name = self.fields["name"]
+        name.label = _("Name")
+        name.help_text = _("Start typing to search for a ship.")
+        name.widget.attrs["placeholder"] = _("Start typing a ship or item name...")
+        name.error_messages["required"] = _("Please enter an item name.")
+        # Texts for the autocomplete JS, which is a static file and can't
+        # use Django's translation tags itself.
+        name.widget.attrs["data-selected-label"] = _("Selected ship type ID")
+        name.widget.attrs["data-none-label"] = _("No ship selected yet.")
+        self.fields["ship_type_id"].error_messages["required"] = _(
             "Please choose an item from the suggestion list."
         )
         self._apply_bootstrap()

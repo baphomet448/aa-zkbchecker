@@ -4,12 +4,14 @@ from io import BytesIO
 
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill
+from django.utils.translation import gettext_lazy as _
 
 HEADERS = [
-    "Name", "Found", "Corporation", "Alliance", "Birthday",
-    "Kills Total", "Losses Total", "Solo Kills", "Solo Losses",
-    "Danger Ratio", "Gang Ratio", "Last Kill Date", "Last Loss Date",
-    "Top Ships (Kills)", "Top Ships (Losses)", "Triggers", "Suspicious Alliance",
+    _("Name"), _("Found"), _("Corporation"), _("Alliance"), _("Birthday"),
+    _("Kills Total"), _("Losses Total"), _("Solo Kills"), _("Solo Losses"),
+    _("Danger Ratio"), _("Gang Ratio"), _("Last Kill Date"), _("Last Loss Date"),
+    _("Top Ships (Kills)"), _("Top Ships (Losses)"), _("Triggers"),
+    _("Suspicious Alliance"),
 ]
 
 TRIGGER_ROW_FILL = PatternFill(start_color="FF895C", end_color="FF895C", fill_type="solid")
@@ -29,10 +31,10 @@ def build_workbook(results: list[dict]) -> BytesIO:
     as an HTTP response."""
     wb = Workbook()
     ws = wb.active
-    ws.title = "Results"
+    ws.title = str(_("Results"))
 
     for col, header in enumerate(HEADERS, start=1):
-        cell = ws.cell(row=1, column=col, value=header)
+        cell = ws.cell(row=1, column=col, value=str(header))
         cell.font = HEADER_FONT
 
     for row_index, r in enumerate(results, start=2):

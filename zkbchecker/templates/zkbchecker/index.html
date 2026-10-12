@@ -2,6 +2,7 @@
 
 {% load i18n %}
 {% load humanize %}
+{% load aa_i18n %}
 
 {% block details %}
     <div id="zkb-content-wrapper" class="position-relative">
@@ -95,6 +96,10 @@
             min-height: 200px;
         }
 
+        #zkb-table-wrap table {
+            font-size: 0.875rem;
+        }
+
         #zkb-overlay {
             position: absolute;
             inset: 0;
@@ -123,6 +128,7 @@
 {% endblock %}
 
 {% block extra_script %}
+        {% get_datatables_language_static LANGUAGE_CODE as DT_LANG_PATH %}
         (function () {
             const form = document.getElementById('zkb-check-form');
             const namesInput = document.getElementById('names');
@@ -172,12 +178,16 @@
                 progressText.textContent = `${current} / ${total}`;
             }
 
+            function shortDate(value) {
+                return value ? value.slice(0, 10) : '';
+            }
+
             function toRow(r) {
                 if (!r.found) {
-                    return [r.name, '', '', '', '', '', '', '', '', '', '', '', 'NOT_FOUND', ''];
+                    return [r.name, '', '', '', '', '', '', '', '', '', '', '', "{% translate 'Not found' %}", ''];
                 }
                 if (r.error) {
-                    return [r.name, '', '', '', '', '', '', '', '', '', '', '', 'CHECK_FAILED', ''];
+                    return [r.name, '', '', '', '', '', '', '', '', '', '', '', "{% translate 'Check failed' %}", ''];
                 }
 
                 const topKills = (r.top_ships_kills || [])
@@ -191,13 +201,13 @@
                     r.name,
                     r.corporation_name,
                     r.alliance_name,
-                    r.birthday,
+                    shortDate(r.birthday),
                     r.kills_total,
                     r.losses_total,
                     `${r.solo_kills} / ${r.solo_losses}`,
                     `${r.danger_ratio} / ${r.gang_ratio}`,
-                    r.last_kill_date,
-                    r.last_loss_date,
+                    shortDate(r.last_kill_date),
+                    shortDate(r.last_loss_date),
                     topKills,
                     topLosses,
                     (r.triggers || []).join(', '),
@@ -230,8 +240,10 @@
                     // Names come from user input and external APIs:
                     // render every cell as text, never as HTML.
                     columnDefs: [{targets: '_all', render: DataTable.render.text()}],
+                    language: {url: '{{ DT_LANG_PATH }}'},
                     pageLength: 20,
                     lengthMenu: [10, 20, 50],
+                    scrollX: true,
                     order: [],
                 });
             }

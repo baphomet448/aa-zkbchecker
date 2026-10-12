@@ -2,6 +2,7 @@
 
 {% load i18n %}
 {% load static %}
+{% load aa_i18n %}
 
 {% block details %}
     <div class="card card-primary">
@@ -63,7 +64,7 @@
                                     <td class="text-end">
                                         <form method="post" class="d-inline"
                                               action="{% url 'zkbchecker:delete_entity' entity.pk %}"
-                                              onsubmit="return confirm('Remove {{ entity.label|escapejs }}?');">
+                                              data-confirm="{% blocktranslate with label=entity.label %}Remove {{ label }}?{% endblocktranslate %}">
                                             {% csrf_token %}
                                             <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2"
                                                     title="{% translate 'Delete' %}">&times;</button>
@@ -109,7 +110,7 @@
                                     <td class="text-end">
                                         <form method="post" class="d-inline"
                                               action="{% url 'zkbchecker:delete_ship' ship.pk %}"
-                                              onsubmit="return confirm('Remove {{ ship.name|escapejs }}?');">
+                                              data-confirm="{% blocktranslate with name=ship.name %}Remove {{ name }}?{% endblocktranslate %}">
                                             {% csrf_token %}
                                             <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2"
                                                     title="{% translate 'Delete' %}">&times;</button>
@@ -128,6 +129,7 @@
 
 {% block extra_javascript %}
     {% include "bundles/datatables-2-js-bs5.html" %}
+    {% get_datatables_language_static LANGUAGE_CODE as DT_LANG_PATH %}
     <script src="{% static 'zkbchecker/js/excluded_ship_autocomplete.js' %}"></script>
 {% endblock %}
 
@@ -161,6 +163,7 @@
 
             function tableOptions() {
                 return {
+                    language: {url: '{{ DT_LANG_PATH }}'},
                     pageLength: 20,
                     lengthMenu: [10, 20, 50],
                     order: [],
@@ -184,8 +187,9 @@
             // position on submit and restore it after the reload.
             document.querySelectorAll('.tab-content form').forEach((form) => {
                 form.addEventListener('submit', (event) => {
-                    // A cancelled delete confirmation must not save anything.
-                    if (event.defaultPrevented) {
+                    // Delete forms carry their confirmation text in data-confirm.
+                    if (form.dataset.confirm && !confirm(form.dataset.confirm)) {
+                        event.preventDefault();
                         return;
                     }
                     sessionStorage.setItem(SCROLL_KEY, String(findScroller().scrollTop));

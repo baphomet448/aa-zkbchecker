@@ -1,0 +1,289 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: aa-zkbchecker\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-10-12 22:37+0000\n"
+"Language: ru\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+
+#: auth_hooks.py:21 templates/zkbchecker/base.html:6
+#: templates/zkbchecker/base.html:10
+msgid "ZKB Checker"
+msgstr "ZKB Checker"
+
+#: excel_export.py:10 forms.py:119 templates/zkbchecker/index.html:62
+#: templates/zkbchecker/index.html:215 templates/zkbchecker/settings.html:99
+msgid "Name"
+msgstr "Имя"
+
+#: excel_export.py:10
+msgid "Found"
+msgstr "Найден"
+
+#: excel_export.py:10 templates/zkbchecker/index.html:63
+#: templates/zkbchecker/index.html:216
+msgid "Corporation"
+msgstr "Корпорация"
+
+#: excel_export.py:10 templates/zkbchecker/index.html:64
+#: templates/zkbchecker/index.html:217
+msgid "Alliance"
+msgstr "Альянс"
+
+#: excel_export.py:10 templates/zkbchecker/index.html:65
+#: templates/zkbchecker/index.html:218
+msgid "Birthday"
+msgstr "Дата рождения"
+
+#: excel_export.py:11
+msgid "Kills Total"
+msgstr "Всего убийств"
+
+#: excel_export.py:11
+msgid "Losses Total"
+msgstr "Всего потерь"
+
+#: excel_export.py:11
+msgid "Solo Kills"
+msgstr "Соло-убийства"
+
+#: excel_export.py:11
+msgid "Solo Losses"
+msgstr "Соло-потери"
+
+#: excel_export.py:12
+msgid "Danger Ratio"
+msgstr "Коэффициент опасности"
+
+#: excel_export.py:12
+msgid "Gang Ratio"
+msgstr "Групповой коэффициент"
+
+#: excel_export.py:12
+msgid "Last Kill Date"
+msgstr "Дата последнего убийства"
+
+#: excel_export.py:12
+msgid "Last Loss Date"
+msgstr "Дата последней потери"
+
+#: excel_export.py:13 templates/zkbchecker/index.html:72
+#: templates/zkbchecker/index.html:225
+msgid "Top Ships (Kills)"
+msgstr "Топ кораблей (убийства)"
+
+#: excel_export.py:13 templates/zkbchecker/index.html:73
+#: templates/zkbchecker/index.html:226
+msgid "Top Ships (Losses)"
+msgstr "Топ кораблей (потери)"
+
+#: excel_export.py:13 templates/zkbchecker/index.html:74
+#: templates/zkbchecker/index.html:227
+msgid "Triggers"
+msgstr "Триггеры"
+
+#: excel_export.py:14 templates/zkbchecker/index.html:75
+#: templates/zkbchecker/index.html:228
+msgid "Suspicious Alliance"
+msgstr "Подозрительный альянс"
+
+#: excel_export.py:34 templates/zkbchecker/index.html:38
+msgid "Results"
+msgstr "Результаты"
+
+#: forms.py:32
+msgid "zKillboard URL"
+msgstr "Ссылка zKillboard"
+
+#: forms.py:34
+msgid "Paste a zKillboard alliance or corporation URL, e.g. https://zkillboard.com/alliance/99012042/"
+msgstr "Вставьте ссылку zKillboard на альянс или корпорацию, например https://zkillboard.com/alliance/99012042/"
+
+#: forms.py:55
+msgid "Please paste a zKillboard URL."
+msgstr "Вставьте ссылку zKillboard."
+
+#: forms.py:57 forms.py:61 templates/zkbchecker/settings.html:51
+msgid "Label"
+msgstr "Подпись"
+
+#: forms.py:59
+msgid "Displayed in results when this entity is matched."
+msgstr "Показывается в результатах, если эта организация найдена."
+
+#: forms.py:62
+msgid "Please enter a label."
+msgstr "Введите подпись."
+
+#: forms.py:71
+msgid "Could not find a valid zKillboard alliance/corporation URL in the provided text."
+msgstr "Не удалось найти корректную ссылку zKillboard на альянс или корпорацию."
+
+#: forms.py:91
+msgid "This alliance/corporation is already in the list."
+msgstr "Этот альянс или корпорация уже есть в списке."
+
+#: forms.py:120
+msgid "Start typing to search for a ship."
+msgstr "Начните вводить название, чтобы найти корабль."
+
+#: forms.py:121
+msgid "Start typing a ship or item name..."
+msgstr "Начните вводить название корабля или предмета..."
+
+#: forms.py:122
+msgid "Please enter an item name."
+msgstr "Введите название предмета."
+
+#: forms.py:125
+msgid "Selected ship type ID"
+msgstr "Выбранный ID типа"
+
+#: forms.py:126
+msgid "No ship selected yet."
+msgstr "Корабль ещё не выбран."
+
+#: forms.py:128
+msgid "Please choose an item from the suggestion list."
+msgstr "Выберите предмет из списка подсказок."
+
+#: templates/zkbchecker/base.html:20
+msgid "Checker"
+msgstr "Проверка"
+
+#: templates/zkbchecker/base.html:26
+msgid "Settings"
+msgstr "Настройки"
+
+#: templates/zkbchecker/index.html:16
+msgid "Character names"
+msgstr "Имена персонажей"
+
+#: templates/zkbchecker/index.html:23
+msgid "One character name per line"
+msgstr "По одному имени персонажа в строке"
+
+#: templates/zkbchecker/index.html:27
+msgid "Check"
+msgstr "Проверить"
+
+#: templates/zkbchecker/index.html:30 templates/zkbchecker/index.html:56
+msgid "Loading..."
+msgstr "Загрузка..."
+
+#: templates/zkbchecker/index.html:40
+msgid "Export Excel"
+msgstr "Экспорт в Excel"
+
+#: templates/zkbchecker/index.html:46
+msgid "Processing..."
+msgstr "Обработка..."
+
+#: templates/zkbchecker/index.html:66 templates/zkbchecker/index.html:219
+msgid "Kills"
+msgstr "Убийства"
+
+#: templates/zkbchecker/index.html:67 templates/zkbchecker/index.html:220
+msgid "Losses"
+msgstr "Потери"
+
+#: templates/zkbchecker/index.html:68 templates/zkbchecker/index.html:221
+msgid "Solo K/L"
+msgstr "Соло У/П"
+
+#: templates/zkbchecker/index.html:69 templates/zkbchecker/index.html:222
+msgid "Danger/Gang"
+msgstr "Опасность/Групповые"
+
+#: templates/zkbchecker/index.html:70 templates/zkbchecker/index.html:223
+msgid "Last Kill"
+msgstr "Последнее убийство"
+
+#: templates/zkbchecker/index.html:71 templates/zkbchecker/index.html:224
+msgid "Last Loss"
+msgstr "Последняя потеря"
+
+#: templates/zkbchecker/index.html:177
+msgid "Not found"
+msgstr "Не найден"
+
+#: templates/zkbchecker/index.html:180
+msgid "Check failed"
+msgstr "Ошибка проверки"
+
+#: templates/zkbchecker/index.html:269
+msgid "Something went wrong. Please try again."
+msgstr "Что-то пошло не так. Попробуйте ещё раз."
+
+#: templates/zkbchecker/index.html:290
+msgid "The check was interrupted."
+msgstr "Проверка была прервана."
+
+#: templates/zkbchecker/settings.html:14
+msgid "Suspicious Entities"
+msgstr "Подозрительные организации"
+
+#: templates/zkbchecker/settings.html:22
+msgid "Excluded Ships"
+msgstr "Исключённые корабли"
+
+#: templates/zkbchecker/settings.html:35
+msgid "Alliances/corporations flagged when they made the final blow on a checked character's recent kills. Paste a zKillboard alliance or corporation URL and give it a label."
+msgstr "Альянсы и корпорации, которые помечаются, если нанесли последний удар в недавних убийствах проверяемого персонажа. Вставьте ссылку zKillboard на альянс или корпорацию и задайте подпись."
+
+#: templates/zkbchecker/settings.html:44 templates/zkbchecker/settings.html:92
+msgid "Add"
+msgstr "Добавить"
+
+#: templates/zkbchecker/settings.html:52
+msgid "Type"
+msgstr "Тип"
+
+#: templates/zkbchecker/settings.html:53
+msgid "ID"
+msgstr "ID"
+
+#: templates/zkbchecker/settings.html:66
+#, python-format
+msgid "Remove %(label)s?"
+msgstr "Удалить «%(label)s»?"
+
+#: templates/zkbchecker/settings.html:69 templates/zkbchecker/settings.html:115
+msgid "Delete"
+msgstr "Удалить"
+
+#: templates/zkbchecker/settings.html:81
+msgid "Ship types ignored in loss statistics (capsules, mobile depots, warp disruptors, etc.). Start typing a name and pick an item from the suggestions."
+msgstr "Типы кораблей, не учитываемые в статистике потерь (капсулы, мобильные депо, варп-помехи и т. д.). Начните вводить название и выберите предмет из подсказок."
+
+#: templates/zkbchecker/settings.html:100
+msgid "Type ID"
+msgstr "ID типа"
+
+#: templates/zkbchecker/settings.html:112
+#, python-format
+msgid "Remove %(name)s?"
+msgstr "Удалить «%(name)s»?"
+
+#: views.py:174
+#, python-format
+msgid "Added suspicious entity: %(label)s"
+msgstr "Добавлена подозрительная организация: %(label)s"
+
+#: views.py:183
+#, python-format
+msgid "Added excluded item: %(name)s"
+msgstr "Добавлен исключённый предмет: %(name)s"
+
+#: views.py:204
+#, python-format
+msgid "Removed suspicious entity: %(label)s"
+msgstr "Удалена подозрительная организация: %(label)s"
+
+#: views.py:215
+#, python-format
+msgid "Removed excluded item: %(name)s"
+msgstr "Удалён исключённый предмет: %(name)s"

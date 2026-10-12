@@ -14,10 +14,12 @@
         shipTypeIdInput.parentNode.appendChild(indicator);
 
         function updateIndicator() {
+            const selectedLabel = nameInput.dataset.selectedLabel || 'Selected ship type ID';
+            const noneLabel = nameInput.dataset.noneLabel || 'No ship selected yet.';
             if (shipTypeIdInput.value) {
-                indicator.textContent = `Selected ship type ID: ${shipTypeIdInput.value}`;
+                indicator.textContent = `${selectedLabel}: ${shipTypeIdInput.value}`;
             } else {
-                indicator.textContent = 'No ship selected yet.';
+                indicator.textContent = noneLabel;
             }
         }
         updateIndicator();

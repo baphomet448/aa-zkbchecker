@@ -11,6 +11,7 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views.decorators.http import require_POST
 from django.utils import timezone
+from django.utils.translation import gettext as _
 
 from celery.result import AsyncResult
 
@@ -170,7 +171,7 @@ def config_settings(request: WSGIRequest) -> HttpResponse:
             entity_form = SuspiciousEntityForm(request.POST)
             if entity_form.is_valid():
                 entity = entity_form.save()
-                messages.success(request, f"Added suspicious entity: {entity.label}")
+                messages.success(request, _("Added suspicious entity: %(label)s") % {"label": entity.label})
                 return _settings_redirect("entities")
             _flash_form_errors(request, entity_form)
 
@@ -179,7 +180,7 @@ def config_settings(request: WSGIRequest) -> HttpResponse:
             ship_form = ExcludedShipForm(request.POST)
             if ship_form.is_valid():
                 ship = ship_form.save()
-                messages.success(request, f"Added excluded item: {ship.name}")
+                messages.success(request, _("Added excluded item: %(name)s") % {"name": ship.name})
                 return _settings_redirect("ships")
             _flash_form_errors(request, ship_form)
 
@@ -200,7 +201,7 @@ def delete_suspicious_entity(request: WSGIRequest, pk: int) -> HttpResponse:
     entity = get_object_or_404(SuspiciousEntity, pk=pk)
     label = entity.label
     entity.delete()
-    messages.success(request, f"Removed suspicious entity: {label}")
+    messages.success(request, _("Removed suspicious entity: %(label)s") % {"label": label})
     return _settings_redirect("entities")
 
 
@@ -211,7 +212,7 @@ def delete_excluded_ship(request: WSGIRequest, pk: int) -> HttpResponse:
     ship = get_object_or_404(ExcludedShip, pk=pk)
     name = ship.name
     ship.delete()
-    messages.success(request, f"Removed excluded item: {name}")
+    messages.success(request, _("Removed excluded item: %(name)s") % {"name": name})
     return _settings_redirect("ships")
 
 @login_required
