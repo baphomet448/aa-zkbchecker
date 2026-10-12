@@ -17,4 +17,5 @@ urlpatterns = [
     path("settings/", views.config_settings, name="settings"),
     path("settings/entity/<int:pk>/delete/", views.delete_suspicious_entity, name="delete_entity"),
     path("settings/ship/<int:pk>/delete/", views.delete_excluded_ship, name="delete_ship"),
+    path("cancel-check/", views.cancel_check, name="cancel_check"),
 ]

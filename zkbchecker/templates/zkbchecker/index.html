@@ -6,17 +6,7 @@
 {% block details %}
     <div id="zkb-content-wrapper" class="position-relative">
 
-        <div id="zkb-overlay" class="d-none">
-            <div class="spinner-border text-light" role="status">
-                <span class="visually-hidden">{% translate "Loading..." %}</span>
-            </div>
-            <div id="zkb-progress-text" class="mt-2 text-light"></div>
-        </div>
-
         <div class="card card-primary">
-            <div class="card-header">
-                <div class="card-title">{% translate "ZKB Character Check" %}</div>
-            </div>
 
             <div class="card-body">
                 <form id="zkb-check-form">
@@ -36,6 +26,9 @@
                     <button type="submit" class="btn btn-primary">
                         {% translate "Check" %}
                     </button>
+                    <span id="zkb-button-spinner" class="spinner-border spinner-border-sm ms-2 align-middle d-none" role="status">
+                        <span class="visually-hidden">{% translate "Loading..." %}</span>
+                    </span>
                 </form>
             </div>
         </div>
@@ -48,27 +41,43 @@
                 </button>
             </div>
             <div class="card-body">
-                <table id="zkb-results-table" class="table table-striped w-100">
-                    <thead>
-                        <tr>
-                            <th>{% translate "Name" %}</th>
-                            <th>{% translate "Corporation" %}</th>
-                            <th>{% translate "Alliance" %}</th>
-                            <th>{% translate "Birthday" %}</th>
-                            <th>{% translate "Kills" %}</th>
-                            <th>{% translate "Losses" %}</th>
-                            <th>{% translate "Solo K/L" %}</th>
-                            <th>{% translate "Danger/Gang" %}</th>
-                            <th>{% translate "Last Kill" %}</th>
-                            <th>{% translate "Last Loss" %}</th>
-                            <th>{% translate "Top Ships (Kills)" %}</th>
-                            <th>{% translate "Top Ships (Losses)" %}</th>
-                            <th>{% translate "Triggers" %}</th>
-                            <th>{% translate "Suspicious Alliance" %}</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
+                <div id="zkb-progress" class="mb-3 d-none">
+                    <div class="d-flex justify-content-between small mb-1">
+                        <span>{% translate "Processing..." %}</span>
+                        <span id="zkb-progress-text"></span>
+                    </div>
+                    <div class="progress">
+                        <div id="zkb-progress-bar" class="progress-bar" role="progressbar" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div id="zkb-table-wrap" class="position-relative">
+                    <div id="zkb-overlay" class="d-none">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">{% translate "Loading..." %}</span>
+                        </div>
+                    </div>
+                    <table id="zkb-results-table" class="table table-striped w-100">
+                        <thead>
+                            <tr>
+                                <th>{% translate "Name" %}</th>
+                                <th>{% translate "Corporation" %}</th>
+                                <th>{% translate "Alliance" %}</th>
+                                <th>{% translate "Birthday" %}</th>
+                                <th>{% translate "Kills" %}</th>
+                                <th>{% translate "Losses" %}</th>
+                                <th>{% translate "Solo K/L" %}</th>
+                                <th>{% translate "Danger/Gang" %}</th>
+                                <th>{% translate "Last Kill" %}</th>
+                                <th>{% translate "Last Loss" %}</th>
+                                <th>{% translate "Top Ships (Kills)" %}</th>
+                                <th>{% translate "Top Ships (Losses)" %}</th>
+                                <th>{% translate "Triggers" %}</th>
+                                <th>{% translate "Suspicious Alliance" %}</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
@@ -82,167 +91,214 @@
 {% block extra_css %}
     {% include "bundles/datatables-2-css-bs5.html" %}
     <style>
+        #zkb-table-wrap {
+            min-height: 200px;
+        }
+
         #zkb-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 10;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background: rgba(0, 0, 0, 0.55);
-    backdrop-filter: blur(3px);
-    border-radius: 0.375rem;
-}
+            position: absolute;
+            inset: 0;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            background: rgba(0, 0, 0, 0.55);
+            backdrop-filter: blur(3px);
+            border-radius: 0.375rem;
+        }
 
-#zkb-overlay .spinner-border,
-#zkb-overlay #zkb-progress-text {
-    color: #ffffff !important;
-}
+        .zkb-export-btn {
+            background-color: #2c8a4b;
+            border-color: #2c8a4b;
+            color: #ffffff;
+        }
 
-.zkb-export-btn {
-    background-color: #2c8a4b;
-    border-color: #2c8a4b;
-    color: #ffffff;
-}
-
-.zkb-export-btn:hover {
-    background-color: #256e3c;
-    border-color: #256e3c;
-    color: #ffffff;
-}
+        .zkb-export-btn:hover {
+            background-color: #256e3c;
+            border-color: #256e3c;
+            color: #ffffff;
+        }
     </style>
 {% endblock %}
 
 {% block extra_script %}
         (function () {
             const form = document.getElementById('zkb-check-form');
-            const overlay = document.getElementById('zkb-overlay');
+            const namesInput = document.getElementById('names');
+            const submitButton = form.querySelector('button[type="submit"]');
+            const progressBox = document.getElementById('zkb-progress');
+            const progressBar = document.getElementById('zkb-progress-bar');
             const progressText = document.getElementById('zkb-progress-text');
+            const overlay = document.getElementById('zkb-overlay');
+            const buttonSpinner = document.getElementById('zkb-button-spinner');
             const resultsCard = document.getElementById('zkb-results-card');
             const exportButton = document.getElementById('zkb-export-excel');
-
-            let dataTable = null;
-
             const startCheckUrl = "{% url 'zkbchecker:start_check' %}";
+            const statusUrlTemplate = "{% url 'zkbchecker:check_status' 'TASK_ID' %}";
             const exportExcelUrl = "{% url 'zkbchecker:export_excel' %}";
             const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            const cancelCheckUrl = "{% url 'zkbchecker:cancel_check' %}";
 
-            let pollTimer = null;
-            let lastResult = null;
+            const POLL_INTERVAL_MS = 2000;
 
-            function showOverlay() {
-                overlay.classList.remove('d-none');
+            let dataTable = null;
+            let lastResult = [];
+            let since = 0;
+            let running = false;
+
+            function updateIndicators() {
+                // No rows yet: the table is blurred with a spinner on
+                // top. From the first row on, the blur goes away and the
+                // spinner moves next to the Check button until the end.
+                const hasRows = lastResult.length > 0;
+                overlay.classList.toggle('d-none', !(running && !hasRows));
+                buttonSpinner.classList.toggle('d-none', !(running && hasRows));
             }
 
-            function hideOverlay() {
-                overlay.classList.add('d-none');
+            function setRunning(isRunning) {
+                running = isRunning;
+                submitButton.disabled = isRunning;
+                namesInput.readOnly = isRunning;
+                progressBox.classList.toggle('d-none', !isRunning);
+                updateIndicators();
             }
 
-            function pollStatus(taskId) {
-                const statusUrl = `/zkbchecker/check-status/${taskId}/`;
-
-                pollTimer = setInterval(() => {
-                    fetch(statusUrl)
-                        .then((r) => r.json())
-                        .then((data) => {
-                            if (data.state === 'PROGRESS' && data.meta) {
-                                progressText.textContent =
-                                    `${data.meta.current} / ${data.meta.total}`;
-                            }
-
-                            if (data.state === 'SUCCESS') {
-                                clearInterval(pollTimer);
-                                hideOverlay();
-                                lastResult = data.result;
-                                renderResults(data.result);
-                            }
-
-                            if (data.state === 'FAILURE') {
-                                clearInterval(pollTimer);
-                                hideOverlay();
-                                alert("{% translate 'Something went wrong. Please try again.' %}");
-                            }
-                        })
-                        .catch(() => {
-                            clearInterval(pollTimer);
-                            hideOverlay();
-                        });
-                }, 2000);
+            function updateProgress(current, total) {
+                if (!total) {
+                    return;
+                }
+                progressBar.style.width = `${Math.round((current / total) * 100)}%`;
+                progressText.textContent = `${current} / ${total}`;
             }
 
-            function renderResults(results) {
-    const rows = results.map((r) => {
-        if (!r.found) {
-            return [r.name, '', '', '', '', '', '', '', '', '', '', '', 'NOT_FOUND', ''];
-        }
+            function toRow(r) {
+                if (!r.found) {
+                    return [r.name, '', '', '', '', '', '', '', '', '', '', '', 'NOT_FOUND', ''];
+                }
+                if (r.error) {
+                    return [r.name, '', '', '', '', '', '', '', '', '', '', '', 'CHECK_FAILED', ''];
+                }
 
-        if (r.error) {
-            return [r.name, '', '', '', '', '', '', '', '', '', '', '', 'CHECK_FAILED', ''];
-        }
+                const topKills = (r.top_ships_kills || [])
+                    .map((s) => `${s.name} (${s.count})`)
+                    .join(', ');
+                const topLosses = (r.top_ships_losses || [])
+                    .map((s) => `${s.name} (${s.count})`)
+                    .join(', ');
 
-        const topKills = (r.top_ships_kills || [])
-            .map((s) => `${s.name} (${s.count})`)
-            .join(', ');
-        const topLosses = (r.top_ships_losses || [])
-            .map((s) => `${s.name} (${s.count})`)
-            .join(', ');
+                return [
+                    r.name,
+                    r.corporation_name,
+                    r.alliance_name,
+                    r.birthday,
+                    r.kills_total,
+                    r.losses_total,
+                    `${r.solo_kills} / ${r.solo_losses}`,
+                    `${r.danger_ratio} / ${r.gang_ratio}`,
+                    r.last_kill_date,
+                    r.last_loss_date,
+                    topKills,
+                    topLosses,
+                    (r.triggers || []).join(', '),
+                    r.suspicious_alliance || '',
+                ];
+            }
 
-        return [
-            r.name,
-            r.corporation_name,
-            r.alliance_name,
-            r.birthday,
-            r.kills_total,
-            r.losses_total,
-            `${r.solo_kills} / ${r.solo_losses}`,
-            `${r.danger_ratio} / ${r.gang_ratio}`,
-            r.last_kill_date,
-            r.last_loss_date,
-            topKills,
-            topLosses,
-            (r.triggers || []).join(', '),
-            r.suspicious_alliance || '',
-        ];
-    });
+            function ensureTable() {
+                if (dataTable) {
+                    return;
+                }
+                dataTable = new DataTable('#zkb-results-table', {
+                    data: [],
+                    columns: [
+                        {title: "{% translate 'Name' %}"},
+                        {title: "{% translate 'Corporation' %}"},
+                        {title: "{% translate 'Alliance' %}"},
+                        {title: "{% translate 'Birthday' %}"},
+                        {title: "{% translate 'Kills' %}"},
+                        {title: "{% translate 'Losses' %}"},
+                        {title: "{% translate 'Solo K/L' %}"},
+                        {title: "{% translate 'Danger/Gang' %}"},
+                        {title: "{% translate 'Last Kill' %}"},
+                        {title: "{% translate 'Last Loss' %}"},
+                        {title: "{% translate 'Top Ships (Kills)' %}"},
+                        {title: "{% translate 'Top Ships (Losses)' %}"},
+                        {title: "{% translate 'Triggers' %}"},
+                        {title: "{% translate 'Suspicious Alliance' %}"},
+                    ],
+                    // Names come from user input and external APIs:
+                    // render every cell as text, never as HTML.
+                    columnDefs: [{targets: '_all', render: DataTable.render.text()}],
+                    pageLength: 20,
+                    lengthMenu: [10, 20, 50],
+                    order: [],
+                });
+            }
 
-    if (dataTable) {
-        dataTable.clear();
-        dataTable.rows.add(rows);
-        dataTable.draw();
-    } else {
-        dataTable = new DataTable('#zkb-results-table', {
-            data: rows,
-            columns: [
-                {title: "{% translate 'Name' %}"},
-                {title: "{% translate 'Corporation' %}"},
-                {title: "{% translate 'Alliance' %}"},
-                {title: "{% translate 'Birthday' %}"},
-                {title: "{% translate 'Kills' %}"},
-                {title: "{% translate 'Losses' %}"},
-                {title: "{% translate 'Solo K/L' %}"},
-                {title: "{% translate 'Danger/Gang' %}"},
-                {title: "{% translate 'Last Kill' %}"},
-                {title: "{% translate 'Last Loss' %}"},
-                {title: "{% translate 'Top Ships (Kills)' %}"},
-                {title: "{% translate 'Top Ships (Losses)' %}"},
-                {title: "{% translate 'Triggers' %}"},
-                {title: "{% translate 'Suspicious Alliance' %}"},
-            ],
-            pageLength: 20,
-            lengthMenu: [10, 20, 50],
-            order: [],
-        });
-    }
+            function addRows(rows) {
+                lastResult.push(...rows);
+                // draw(false) keeps the current page, so the table does
+                // not jump back while the user browses it.
+                dataTable.rows.add(rows.map(toRow)).draw(false);
+                updateIndicators();
+            }
 
-    resultsCard.classList.remove('d-none');
-    exportButton.classList.remove('d-none');
-}
-exportButton.addEventListener('click', function () {
-                if (!lastResult) {
+            function resetResults() {
+                lastResult = [];
+                since = 0;
+                exportButton.classList.add('d-none');
+                progressBar.style.width = '0%';
+                progressText.textContent = '';
+                // The card must be visible before the table is built,
+                // otherwise DataTables measures the columns at zero width.
+                resultsCard.classList.remove('d-none');
+                ensureTable();
+                dataTable.clear().draw();
+            }
+
+            function finish() {
+                setRunning(false);
+                if (lastResult.length) {
+                    exportButton.classList.remove('d-none');
+                }
+            }
+
+            function fail() {
+                finish();
+                alert("{% translate 'Something went wrong. Please try again.' %}");
+            }
+
+            function poll(taskId) {
+                const url = statusUrlTemplate.replace('TASK_ID', taskId) + `?since=${since}`;
+
+                fetch(url)
+                    .then((r) => r.json())
+                    .then((data) => {
+                        if (data.rows && data.rows.length) {
+                            addRows(data.rows);
+                        }
+                        since = data.next;
+                        updateProgress(data.current, data.total);
+
+                        if (data.state === 'SUCCESS') {
+                            finish();
+                        } else if (data.state === 'FAILURE') {
+                            fail();
+                        } else if (data.state === 'CANCELLED') {
+                            finish();
+                            alert("{% translate 'The check was interrupted.' %}");
+                        } else {
+                            setTimeout(() => poll(taskId), POLL_INTERVAL_MS);
+                        }
+                    })
+                    .catch(() => {
+                        fail();
+                    });
+            }
+
+            exportButton.addEventListener('click', function () {
+                if (!lastResult.length) {
                     return;
                 }
 
@@ -266,11 +322,11 @@ exportButton.addEventListener('click', function () {
                         window.URL.revokeObjectURL(url);
                     });
             });
+
             form.addEventListener('submit', function (event) {
                 event.preventDefault();
 
-                const namesRaw = document.getElementById('names').value;
-                const names = namesRaw
+                const names = namesInput.value
                     .split('\n')
                     .map((n) => n.trim())
                     .filter((n) => n.length > 0);
@@ -279,10 +335,8 @@ exportButton.addEventListener('click', function () {
                     return;
                 }
 
-                resultsCard.classList.add('d-none');
-                exportButton.classList.add('d-none');
-                progressText.textContent = '';
-                showOverlay();
+                resetResults();
+                setRunning(true);
 
                 fetch(startCheckUrl, {
                     method: 'POST',
@@ -295,14 +349,25 @@ exportButton.addEventListener('click', function () {
                     .then((r) => r.json())
                     .then((data) => {
                         if (data.task_id) {
-                            pollStatus(data.task_id);
+                            poll(data.task_id);
                         } else {
-                            hideOverlay();
+                            fail();
                         }
                     })
                     .catch(() => {
-                        hideOverlay();
+                        fail();
                     });
+            });
+            // Reload, theme change, closing the tab, navigating away:
+            // tell the server to stop the check instead of leaving the
+            // worker busy for nobody. FormData carries the CSRF token.
+            window.addEventListener('pagehide', function () {
+                if (!running) {
+                    return;
+                }
+                const data = new FormData();
+                data.append('csrfmiddlewaretoken', csrfToken);
+                navigator.sendBeacon(cancelCheckUrl, data);
             });
         })();
 {% endblock %}

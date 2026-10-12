@@ -1,6 +1,9 @@
 """App Views"""
 
 import json
+import uuid
+
+from zkbchecker import check_control
 
 from django.contrib.auth.decorators import login_required, permission_required
 from django.core.handlers.wsgi import WSGIRequest
@@ -50,25 +53,50 @@ def start_check(request: WSGIRequest) -> JsonResponse:
     if not names:
         return JsonResponse({"error": "No character names provided"}, status=400)
 
-    async_result = check_characters_task.delay(names)
+    # Our own task id, registered *before* the task starts, so the task
+    # never sees a missing heartbeat on its very first check.
+    task_id = str(uuid.uuid4())
+    check_control.register(request.user.pk, task_id)
+    check_characters_task.apply_async(args=[names, request.user.pk], task_id=task_id)
 
-    return JsonResponse({"task_id": async_result.id})
+    return JsonResponse({"task_id": task_id})
 
 
 @login_required
 @permission_required("zkbchecker.basic_access")
 def check_status(request: WSGIRequest, task_id: str) -> JsonResponse:
-    """Return the current status of a background check task, and its
-    result once it has finished."""
+    """Return the state of a background check plus the result rows the
+    client hasn't seen yet. The client passes `?since=N`, the number of
+    rows it already has, and gets rows[N:] back with `next` to use as
+    `since` in the following request. Every poll doubles as a heartbeat
+    that tells the task somebody is still watching."""
+    try:
+        since = max(int(request.GET.get("since", 0)), 0)
+    except ValueError:
+        since = 0
+
     async_result = AsyncResult(task_id)
+    state = async_result.state
 
-    response = {"state": async_result.state}
+    if state in ("PENDING", "PROGRESS"):
+        check_control.touch(task_id)
 
-    if async_result.state == "PROGRESS":
-        response["meta"] = async_result.info
-    elif async_result.state == "SUCCESS":
-        response["result"] = async_result.result
-    elif async_result.state == "FAILURE":
+    response = {"state": state, "rows": [], "next": since}
+
+    if state in ("PROGRESS", "CANCELLED"):
+        info = async_result.info or {}
+        results = info.get("results", [])
+        response["current"] = info.get("current", 0)
+        response["total"] = info.get("total", 0)
+        response["rows"] = results[since:]
+        response["next"] = max(since, len(results))
+    elif state == "SUCCESS":
+        results = async_result.result or []
+        response["current"] = len(results)
+        response["total"] = len(results)
+        response["rows"] = results[since:]
+        response["next"] = max(since, len(results))
+    elif state == "FAILURE":
         response["error"] = str(async_result.info)
 
     return JsonResponse(response)
@@ -185,3 +213,12 @@ def delete_excluded_ship(request: WSGIRequest, pk: int) -> HttpResponse:
     ship.delete()
     messages.success(request, f"Removed excluded item: {name}")
     return _settings_redirect("ships")
+
+@login_required
+@permission_required("zkbchecker.basic_access")
+@require_POST
+def cancel_check(request: WSGIRequest) -> HttpResponse:
+    """Called by the browser (sendBeacon) when the page is being left
+    or reloaded: cancel the user's running check."""
+    check_control.cancel_active(request.user.pk)
+    return HttpResponse(status=204)
