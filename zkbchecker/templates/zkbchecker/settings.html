@@ -1,0 +1,203 @@
+{% extends 'zkbchecker/base.html' %}
+
+{% load i18n %}
+{% load static %}
+
+{% block details %}
+    <div class="card card-primary">
+        <div class="card-header">
+            <ul class="nav nav-tabs card-header-tabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link {% if active_tab == 'entities' %}active{% endif %}"
+                            data-bs-toggle="tab" data-bs-target="#pane-entities"
+                            type="button" role="tab">
+                        {% translate "Suspicious Entities" %}
+                        <span class="badge bg-secondary">{{ entities|length }}</span>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link {% if active_tab == 'ships' %}active{% endif %}"
+                            data-bs-toggle="tab" data-bs-target="#pane-ships"
+                            type="button" role="tab">
+                        {% translate "Excluded Ships" %}
+                        <span class="badge bg-secondary">{{ ships|length }}</span>
+                    </button>
+                </li>
+            </ul>
+        </div>
+
+        <div class="card-body">
+            <div class="tab-content">
+
+                <div class="tab-pane fade {% if active_tab == 'entities' %}show active{% endif %}"
+                     id="pane-entities" role="tabpanel">
+                    <p class="text-muted">
+                        {% translate "Alliances/corporations flagged when they made the final blow on a checked character's recent kills. Paste a zKillboard alliance or corporation URL and give it a label." %}
+                    </p>
+
+                    <form method="post" class="row g-2 align-items-start mb-4" autocomplete="off">
+                        {% csrf_token %}
+                        <input type="hidden" name="form_type" value="entity">
+                        <div class="col-md-6">{{ entity_form.zkillboard_url }}</div>
+                        <div class="col-md-4">{{ entity_form.label }}</div>
+                        <div class="col-md-2 d-grid">
+                            <button type="submit" class="btn btn-primary">{% translate "Add" %}</button>
+                        </div>
+                    </form>
+
+                    <table id="zkb-entities-table" class="table table-striped table-hover table-sm align-middle w-100">
+                        <thead>
+                            <tr>
+                                <th>{% translate "Label" %}</th>
+                                <th>{% translate "Type" %}</th>
+                                <th>{% translate "ID" %}</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for entity in entities %}
+                                <tr>
+                                    <td>{{ entity.label }}</td>
+                                    <td>{{ entity.get_entity_type_display }}</td>
+                                    <td>{{ entity.entity_id }}</td>
+                                    <td class="text-end">
+                                        <form method="post" class="d-inline"
+                                              action="{% url 'zkbchecker:delete_entity' entity.pk %}"
+                                              onsubmit="return confirm('Remove {{ entity.label|escapejs }}?');">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2"
+                                                    title="{% translate 'Delete' %}">&times;</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="tab-pane fade {% if active_tab == 'ships' %}show active{% endif %}"
+                     id="pane-ships" role="tabpanel">
+                    <p class="text-muted">
+                        {% translate "Ship types ignored in loss statistics (capsules, mobile depots, warp disruptors, etc.). Start typing a name and pick an item from the suggestions." %}
+                    </p>
+
+                    <form method="post" class="row g-2 align-items-start mb-4" autocomplete="off">
+                        {% csrf_token %}
+                        <input type="hidden" name="form_type" value="ship">
+                        <div class="col-md-10">
+                            {{ ship_form.name }}
+                            <div>{{ ship_form.ship_type_id }}</div>
+                        </div>
+                        <div class="col-md-2 d-grid">
+                            <button type="submit" class="btn btn-primary">{% translate "Add" %}</button>
+                        </div>
+                    </form>
+
+                    <table id="zkb-ships-table" class="table table-striped table-hover table-sm align-middle w-100">
+                        <thead>
+                            <tr>
+                                <th>{% translate "Name" %}</th>
+                                <th>{% translate "Type ID" %}</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ship in ships %}
+                                <tr>
+                                    <td>{{ ship.name }}</td>
+                                    <td>{{ ship.ship_type_id }}</td>
+                                    <td class="text-end">
+                                        <form method="post" class="d-inline"
+                                              action="{% url 'zkbchecker:delete_ship' ship.pk %}"
+                                              onsubmit="return confirm('Remove {{ ship.name|escapejs }}?');">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2"
+                                                    title="{% translate 'Delete' %}">&times;</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_javascript %}
+    {% include "bundles/datatables-2-js-bs5.html" %}
+    <script src="{% static 'zkbchecker/js/excluded_ship_autocomplete.js' %}"></script>
+{% endblock %}
+
+{% block extra_css %}
+    {% include "bundles/datatables-2-css-bs5.html" %}
+    <style>
+        #zkb-entities-table,
+        #zkb-ships-table {
+            --bs-table-hover-bg: rgba(var(--bs-emphasis-color-rgb), 0.18);
+        }
+    </style>
+{% endblock %}
+
+{% block extra_script %}
+        (function () {
+            const SCROLL_KEY = 'zkb-settings-scroll';
+
+            // AA scrolls its content inside a container, not the window,
+            // so find the nearest scrollable ancestor of our tables.
+            function findScroller() {
+                let el = document.getElementById('zkb-entities-table');
+                while (el && el !== document.body) {
+                    const overflowY = getComputedStyle(el).overflowY;
+                    if (overflowY === 'auto' || overflowY === 'scroll') {
+                        return el;
+                    }
+                    el = el.parentElement;
+                }
+                return document.scrollingElement || document.documentElement;
+            }
+
+            function tableOptions() {
+                return {
+                    pageLength: 20,
+                    lengthMenu: [10, 20, 50],
+                    order: [],
+                    columnDefs: [{orderable: false, searchable: false, targets: -1}],
+                };
+            }
+
+            const entitiesTable = new DataTable('#zkb-entities-table', tableOptions());
+            const shipsTable = new DataTable('#zkb-ships-table', tableOptions());
+
+            // A table initialised inside a hidden tab gets wrong column
+            // widths, so recalculate whenever a tab becomes visible.
+            document.querySelectorAll('[data-bs-toggle="tab"]').forEach((tabButton) => {
+                tabButton.addEventListener('shown.bs.tab', () => {
+                    entitiesTable.columns.adjust();
+                    shipsTable.columns.adjust();
+                });
+            });
+
+            // Add/delete are full page reloads: remember the scroll
+            // position on submit and restore it after the reload.
+            document.querySelectorAll('.tab-content form').forEach((form) => {
+                form.addEventListener('submit', (event) => {
+                    // A cancelled delete confirmation must not save anything.
+                    if (event.defaultPrevented) {
+                        return;
+                    }
+                    sessionStorage.setItem(SCROLL_KEY, String(findScroller().scrollTop));
+                });
+            });
+
+            const saved = sessionStorage.getItem(SCROLL_KEY);
+            if (saved !== null) {
+                sessionStorage.removeItem(SCROLL_KEY);
+                requestAnimationFrame(() => {
+                    findScroller().scrollTop = parseInt(saved, 10);
+                });
+            }
+        })();
+{% endblock %}

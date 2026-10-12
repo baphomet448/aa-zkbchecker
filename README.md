@@ -39,10 +39,16 @@ Assign these to the appropriate Alliance Auth groups (e.g. give
 only to a smaller, trusted group) via **Groups → your group →
 Permissions** in the Alliance Auth admin.
 
+Users with only `basic_access` see just the checker, with no tab bar.
+The **Settings** tab appears only for users who also have `manage_config`.
+
 ## Configuration
 
-The plugin's detection logic relies on two admin-managed lists, found
-under **Admin → ZKBCHECKER**:
+The plugin's detection logic relies on two managed lists. Users with the
+`zkbchecker.manage_config` permission get a **Settings** tab next to the
+**Checker** tab in the plugin's top menu, where both lists can be edited.
+The same lists are also available in the Django admin under
+**Admin → ZKBCHECKER**, which stays as a fallback for superusers.
 
 ### Suspicious Entities
 
@@ -66,7 +72,7 @@ character's "top ships lost" list would be dominated by these
 disposable items instead of showing what they actually fly in
 combat.
 
-Start typing a ship name in the admin form; matching suggestions are
+Start typing a ship name in the form (on the Settings tab or in the admin); matching suggestions are
 pulled from a local, ESI-sourced list (see `update_ship_list` below)
 and selecting one fills in the ship type ID automatically.
 

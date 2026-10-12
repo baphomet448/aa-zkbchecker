@@ -10,6 +10,25 @@
     {% translate "ZKB Checker" %}
 {% endblock header_nav_brand %}
 
+{% block header_nav_collapse_left %}
+    {# Tabs are only shown to users who can reach the settings page. #}
+    {# Everyone else just gets the checker, without any tab bar. #}
+    {% if perms.zkbchecker.manage_config %}
+        <li class="nav-item">
+            <a class="nav-link {% if request.resolver_match.url_name == 'index' %}active{% endif %}"
+               href="{% url 'zkbchecker:index' %}">
+                {% translate "Checker" %}
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if request.resolver_match.url_name == 'settings' %}active{% endif %}"
+               href="{% url 'zkbchecker:settings' %}">
+                {% translate "Settings" %}
+            </a>
+        </li>
+    {% endif %}
+{% endblock header_nav_collapse_left %}
+
 {% block content %}
     <div class="allianceauth-zkbchecker-plugin">
         {% block details %}{% endblock %}

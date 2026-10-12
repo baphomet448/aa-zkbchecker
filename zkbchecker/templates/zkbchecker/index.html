@@ -180,6 +180,10 @@
             return [r.name, '', '', '', '', '', '', '', '', '', '', '', 'NOT_FOUND', ''];
         }
 
+        if (r.error) {
+            return [r.name, '', '', '', '', '', '', '', '', '', '', '', 'CHECK_FAILED', ''];
+        }
+
         const topKills = (r.top_ships_kills || [])
             .map((s) => `${s.name} (${s.count})`)
             .join(', ');
