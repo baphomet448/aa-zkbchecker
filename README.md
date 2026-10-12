@@ -99,7 +99,7 @@ community; check your `django-esi` version for a permanent fix.
 Install the package into your Alliance Auth virtual environment:
 
 ```bash
-pip install git+https://github.com/baphomet448/aa-zkbchecker.git
+pip install git+https://github.com/baphomet448/aa-zkbchecker.git@v0.2.0
 ```
 
 Add `zkbchecker` to `INSTALLED_APPS` in your `local.py`:
@@ -128,16 +128,44 @@ python manage.py migrate
 python manage.py collectstatic --noinput
 ```
 
-The excluded-ship autocomplete field needs a local, one-time snapshot
-of current EVE ship types. Fetch it with:
+A snapshot of EVE ship and deployable types, used by the excluded-ship
+autocomplete, is bundled with the plugin. To refresh it (for example
+after an expansion adds new ships), run:
 
 ```bash
 python manage.py update_ship_list
 ```
 
-Re-run this command occasionally (e.g. after a game expansion adds
-new ships) to keep the autocomplete list up to date.
-
 Then restart your `allianceserver`/`gunicorn`/`supervisor` processes as usual.
+
+## How a check works
+
+- Characters are checked one after another, with a pause between
+  zKillboard requests to stay within its limits: expect about 3 seconds
+  per character (100 names take roughly 5 minutes).
+- Results appear in the table as they are ready; Export Excel becomes
+  available when the check finishes.
+- A running check is stopped automatically when the user reloads or
+  leaves the page, and only one check per user runs at a time (starting
+  a new one cancels the previous). This relies on Django's cache being
+  shared between the web process and the Celery workers, which is the
+  case in a standard Alliance Auth installation.
+
+## Localization
+
+The interface is available in English and Russian and follows the
+language selected in Alliance Auth. Other languages can be added with
+`makemessages` / `compilemessages` inside the `zkbchecker` directory.
+
+## Upgrading
+
+```bash
+pip install -U git+https://github.com/baphomet448/aa-zkbchecker.git@v0.2.0
+python manage.py migrate
+python manage.py collectstatic --noinput
+```
+
+Then restart your Alliance Auth processes, **including the Celery
+workers**: they do not reload code on their own.
 
 #

@@ -1,89 +1,41 @@
-# Change Log
+# Changelog
 
-All notable changes to this project will be documented in this file.
-
-The format is based on [Keep a Changelog](http://keepachangelog.com/)
-and this project adheres to [Semantic Versioning](http://semver.org/).
-
-## [In Development] - Unreleased
-
-## [0.0.9] - 2024-06-16
-
-### Removed
-
-- Support for Python 3.8 and Python 3.9
-
-## [0.0.8] - 2024-03-16
-
-> [!NOTE]
->
-> **This version needs at least Alliance Auth v4.0.0!**
+## [0.2.0] - 2026-10-12
 
 ### Added
 
-- Compatibility to Alliance Auth v4
-  - Bootstrap 5
-  - Django 4.2
-
-### Removed
-
-- Compatibility to Alliance Auth v3
-
-## [0.0.7] - 2023-09-27
-
-> [!NOTE]
->
-> **This is the last version compatible with Alliance Auth v3.**
+- **Settings tab** next to the **Checker** tab for users with the
+  `zkbchecker.manage_config` permission: manage Suspicious Entities and
+  Excluded Ships inside Alliance Auth (add above the table, search,
+  sort, delete). The Django admin stays available as a fallback.
+- Results now **appear in the table while the check is running**; a
+  progress bar and spinners show that work is in progress. Export Excel
+  becomes available when the check finishes.
+- A running check is **stopped automatically** when the user reloads or
+  leaves the page, so the Celery worker is not kept busy for nobody.
+  One active check per user: starting a new one cancels the previous.
+- **English and Russian localization** (interface, messages, Excel
+  headers, table controls).
+- Deployables (mobile depots, tractor units, warp disruptors, etc.) are
+  now searchable in the excluded-ship autocomplete.
 
 ### Changed
 
-- Moved the build process to PEP 621 / pyproject.toml
-- Test suite updated
+- Excluded ships and suspicious entities are read from the database once
+  per batch instead of once per character.
+- Characters whose zKillboard check failed are shown as "Check failed"
+  in the table instead of breaking it.
+- Dates in the results table are shortened to the day; the Excel export
+  keeps the full timestamps.
 
-## [0.0.6] - 2023-07-23
+### Fixed
 
-### Added
+- Timeouts on large batches: zKillboard requests are paced, retried on
+  timeouts and use a longer timeout.
+- Characters without any killboard activity now show their name.
 
-- Ukrainian to language handling in `Makefile`
+## [0.1.0] - 2026-09-28
 
-## [0.0.5] - 2023-04-18
-
-### Added
-
-- Directory for translation files
-
-## [0.0.4] - 2022-11-26
-
-### Added
-
-- Directory for static files
-
-### Changed
-
-- GitHub actions updated
-- `pre-commit` config updated and applied
-- Example test improved
-
-## [0.0.3] - 2022-09-15
-
-### Added
-
-- `SITE_URL` to test settings
-
-## [0.0.2] - 2022-08-17
-
-### Added
-
-- Build artifact to GitHub workflows
-- `MANIFEST.in` re-added
-
-### Changed
-
-- Test settings updated for Alliance Auth v3
-- Package name in setup.cfg for PyPi
-
-## [0.0.1] - 2022-03-12
-
-### Added
-
-- Initial version
+- Initial release: character checks via zKillboard and ESI, suspicion
+  triggers, batch checks with Celery, Excel export, configurable
+  suspicious entities and excluded ships.
